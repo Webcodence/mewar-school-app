@@ -1,241 +1,97 @@
-<!-- Updated school_panel.html with edit and delete for students and teachers -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>School Panel - Mewar App</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f2f2f2;
-      margin: 0;
-      padding: 20px;
-    }
-    h2, h3 {
-      color: #333;
-    }
-    input, select, button {
-      padding: 10px;
-      margin: 5px 0;
-      width: 100%;
-      box-sizing: border-box;
-    }
-    button {
-      background: #007bff;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #0056b3;
-    }
-    .container {
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-      max-width: 800px;
-      margin: auto;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    .edit-btn {
-      background-color: #28a745;
-      margin-left: 10px;
-    }
-    .delete-btn {
-      background-color: #dc3545;
-      margin-left: 10px;
-    }
-    .add-btn {
-      background-color: #17a2b8;
-      margin-left: 10px;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <div class="panel">
+    <h2>School Dashboard</h2>
+    <button onclick="logout()">Logout</button>
 
-<div class="container">
-  <h2>Welcome to School Panel</h2>
+    <h3>Manage Students</h3>
+    <form id="studentForm" onsubmit="event.preventDefault(); saveStudent();">
+      <input type="hidden" id="studentIndex">
+      <input type="text" id="studentName" placeholder="Student Name" required />
+      <select id="studentClass" required>
+        <option value="">Select Class</option>
+        <option value="1st">1st</option>
+        <option value="2nd">2nd</option>
+        <option value="3rd">3rd</option>
+        <option value="4th">4th</option>
+        <option value="5th">5th</option>
+        <option value="6th">6th</option>
+        <option value="7th">7th</option>
+        <option value="8th">8th</option>
+        <option value="9th">9th</option>
+        <option value="10th">10th</option>
+        <option value="11th PCM">11th PCM</option>
+        <option value="11th PCB">11th PCB</option>
+        <option value="11th Commerce">11th Commerce</option>
+        <option value="11th Agriculture">11th Agriculture</option>
+        <option value="12th PCM">12th PCM</option>
+        <option value="12th PCB">12th PCB</option>
+        <option value="12th Commerce">12th Commerce</option>
+        <option value="12th Agriculture">12th Agriculture</option>
+      </select>
+      <button type="submit">Save Student</button>
+    </form>
+    <div id="studentList"></div>
 
-  <h3>Manage Students</h3>
-  <form id="studentForm" onsubmit="event.preventDefault(); saveStudent();">
-    <input type="hidden" id="studentIndex">
-    <input type="text" id="studentName" placeholder="Student Name" required />
-    <select id="studentClass">
-      <option value="1st">1st</option>
-      <option value="2nd">2nd</option>
-      <option value="3rd">3rd</option>
-      <option value="4th">4th</option>
-      <option value="5th">5th</option>
-      <option value="6th">6th</option>
-      <option value="7th">7th</option>
-      <option value="8th">8th</option>
-      <option value="9th">9th</option>
-      <option value="10th">10th</option>
-      <option value="11th PCM">11th PCM</option>
-      <option value="11th PCB">11th PCB</option>
-      <option value="11th Commerce">11th Commerce</option>
-      <option value="11th Agriculture">11th Agriculture</option>
-      <option value="12th PCM">12th PCM</option>
-      <option value="12th PCB">12th PCB</option>
-      <option value="12th Commerce">12th Commerce</option>
-      <option value="12th Agriculture">12th Agriculture</option>
-    </select>
-    <button type="submit">Save Student</button>
-    <button type="button" class="add-btn" onclick="document.getElementById('studentForm').reset(); document.getElementById('studentIndex').value = ''">Add New Student</button>
-  </form>
+    <h3>Manage Teachers</h3>
+    <form id="teacherForm" onsubmit="event.preventDefault(); saveTeacher();">
+      <input type="hidden" id="teacherIndex">
+      <input type="text" id="teacherName" placeholder="Teacher Name" required />
+      <input type="text" id="teacherPhone" placeholder="Phone Number" required />
+      <input type="email" id="teacherEmail" placeholder="Email Address" required />
+      <input type="text" id="teacherSubject" placeholder="Subject" required />
+      <input type="text" id="teacherPost" placeholder="Post (e.g. TGT, PGT)" required />
+      <select id="assignedClass">
+        <option value="">Assign Class Teacher Role</option>
+        <option value="1st">1st</option>
+        <option value="2nd">2nd</option>
+        <option value="3rd">3rd</option>
+        <option value="4th">4th</option>
+        <option value="5th">5th</option>
+        <option value="6th">6th</option>
+        <option value="7th">7th</option>
+        <option value="8th">8th</option>
+        <option value="9th">9th</option>
+        <option value="10th">10th</option>
+        <option value="11th PCM">11th PCM</option>
+        <option value="11th PCB">11th PCB</option>
+        <option value="11th Commerce">11th Commerce</option>
+        <option value="11th Agriculture">11th Agriculture</option>
+        <option value="12th PCM">12th PCM</option>
+        <option value="12th PCB">12th PCB</option>
+        <option value="12th Commerce">12th Commerce</option>
+        <option value="12th Agriculture">12th Agriculture</option>
+      </select>
+      <button type="submit">Save Teacher</button>
+    </form>
+    <div id="teacherList"></div>
 
-  <div id="studentList"></div>
+    <h3>Attendance Overview</h3>
+    <div id="attendanceOverview"></div>
+  </div>
 
-  <hr>
-  <h3>Manage Teachers</h3>
-  <form id="teacherForm" onsubmit="event.preventDefault(); saveTeacher();">
-    <input type="hidden" id="teacherIndex">
-    <input type="text" id="teacherName" placeholder="Teacher Name" required />
-    <input type="text" id="teacherPhone" placeholder="Phone Number" required />
-    <input type="email" id="teacherEmail" placeholder="Email Address" required />
-    <input type="text" id="teacherSubject" placeholder="Subject Taught" required />
-    <input type="text" id="teacherPost" placeholder="Post (e.g., TGT, PGT)" required />
-    <select id="classTeacherAssigned">
-      <option value="">Assign as Class Teacher (Optional)</option>
-      <option value="1st">1st</option>
-      <option value="2nd">2nd</option>
-      <option value="3rd">3rd</option>
-      <option value="4th">4th</option>
-      <option value="5th">5th</option>
-      <option value="6th">6th</option>
-      <option value="7th">7th</option>
-      <option value="8th">8th</option>
-      <option value="9th">9th</option>
-      <option value="10th">10th</option>
-      <option value="11th PCM">11th PCM</option>
-      <option value="11th PCB">11th PCB</option>
-      <option value="11th Commerce">11th Commerce</option>
-      <option value="11th Agriculture">11th Agriculture</option>
-      <option value="12th PCM">12th PCM</option>
-      <option value="12th PCB">12th PCB</option>
-      <option value="12th Commerce">12th Commerce</option>
-      <option value="12th Agriculture">12th Agriculture</option>
-    </select>
-    <button type="submit">Save Teacher</button>
-    <button type="button" class="add-btn" onclick="document.getElementById('teacherForm').reset(); document.getElementById('teacherIndex').value = ''">Add New Teacher</button>
-  </form>
-  <div id="teacherList"></div>
-</div>
+  <script src="app.js"></script>
+  <script>
+    if (localStorage.getItem("userRole") !== "school") {
+      alert("Access Denied!");
+      window.location.href = "index.html";
+    }
 
-<script>
-let students = JSON.parse(localStorage.getItem("students")) || [];
-let teachers = JSON.parse(localStorage.getItem("teachers")) || [];
+    showStudents();
+    showTeachers();
+    showAttendance();
 
-function getClassBaseCode(cls) {
-  const codes = {
-    "1st": 1000, "2nd": 2000, "3rd": 3000, "4th": 4000, "5th": 5000,
-    "6th": 6000, "7th": 7000, "8th": 8000, "9th": 9000, "10th": 10000,
-    "11th PCM": 11000, "11th PCB": 11100, "11th Commerce": 11200, "11th Agriculture": 11300,
-    "12th PCM": 12000, "12th PCB": 12100, "12th Commerce": 12200, "12th Agriculture": 12300
-  };
-  return codes[cls] || 999;
-}
-
-function generateRollNo(cls) {
-  const base = getClassBaseCode(cls);
-  const classStudents = students.filter(s => s.class === cls);
-  return base + classStudents.length + 1;
-}
-
-function generateEmpID() {
-  return "MEWAR" + (teachers.length + 1).toString().padStart(3, '0');
-}
-
-function saveStudent() {
-  const index = document.getElementById("studentIndex").value;
-  const name = document.getElementById("studentName").value;
-  const studentClass = document.getElementById("studentClass").value;
-
-  if (index === "") {
-    const rollNo = generateRollNo(studentClass);
-    students.push({ name, class: studentClass, rollNo });
-  } else {
-    const rollNo = students[index].rollNo;
-    students[index] = { name, class: studentClass, rollNo };
-  }
-  localStorage.setItem("students", JSON.stringify(students));
-  document.getElementById("studentForm").reset();
-  document.getElementById("studentIndex").value = "";
-  displayStudents();
-}
-
-function saveTeacher() {
-  const index = document.getElementById("teacherIndex").value;
-  const name = document.getElementById("teacherName").value;
-  const phone = document.getElementById("teacherPhone").value;
-  const email = document.getElementById("teacherEmail").value;
-  const subject = document.getElementById("teacherSubject").value;
-  const post = document.getElementById("teacherPost").value;
-  const assignedClass = document.getElementById("classTeacherAssigned").value;
-
-  if (index === "") {
-    const empID = generateEmpID();
-    teachers.push({ name, phone, email, subject, post, assignedClass, empID });
-  } else {
-    const empID = teachers[index].empID;
-    teachers[index] = { name, phone, email, subject, post, assignedClass, empID };
-  }
-  localStorage.setItem("teachers", JSON.stringify(teachers));
-  document.getElementById("teacherForm").reset();
-  document.getElementById("teacherIndex").value = "";
-  displayTeachers();
-}
-
-function editStudent(index) {
-  const s = students[index];
-  document.getElementById("studentName").value = s.name;
-  document.getElementById("studentClass").value = s.class;
-  document.getElementById("studentIndex").value = index;
-}
-
-function deleteStudent(index) {
-  students.splice(index, 1);
-  localStorage.setItem("students", JSON.stringify(students));
-  displayStudents();
-}
-
-function editTeacher(index) {
-  const t = teachers[index];
-  document.getElementById("teacherName").value = t.name;
-  document.getElementById("teacherPhone").value = t.phone;
-  document.getElementById("teacherEmail").value = t.email;
-  document.getElementById("teacherSubject").value = t.subject;
-  document.getElementById("teacherPost").value = t.post;
-  document.getElementById("classTeacherAssigned").value = t.assignedClass;
-  document.getElementById("teacherIndex").value = index;
-}
-
-function deleteTeacher(index) {
-  teachers.splice(index, 1);
-  localStorage.setItem("teachers", JSON.stringify(teachers));
-  displayTeachers();
-}
-
-function displayStudents() {
-  const listDiv = document.getElementById("studentList");
-  listDiv.innerHTML = "<h3>Student List</h3>";
-  students.forEach((s, index) => {
-    listDiv.innerHTML += `<p>${s.name} - ${s.class} - Roll No: ${s.rollNo} <button class='edit-btn' onclick='editStudent(${index})'>Edit</button><button class='delete-btn' onclick='deleteStudent(${index})'>Delete</button></p>`;
-  });
-}
-
-function displayTeachers() {
-  const listDiv = document.getElementById("teacherList");
-  listDiv.innerHTML = "<h3>Teacher List</h3>";
-  teachers.forEach((t, index) => {
-    listDiv.innerHTML += `<p>${t.name} - ${t.post} - ${t.subject} - ${t.empID} - Class Teacher: ${t.assignedClass || "None"} <button class='edit-btn' onclick='editTeacher(${index})'>Edit</button><button class='delete-btn' onclick='deleteTeacher(${index})'>Delete</button></p>`;
-  });
-}
-
-displayStudents();
-displayTeachers();
-</script>
-
+    function logout() {
+      localStorage.removeItem("userRole");
+      window.location.href = "index.html";
+    }
+  </script>
 </body>
 </html>
