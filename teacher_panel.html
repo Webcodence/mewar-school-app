@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Teacher Panel - Mewar App</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="panel">
+    <h2>Teacher Panel</h2>
+    <p id="teacherInfo"></p>
+    <button onclick="logout()">Logout</button>
+
+    <div id="attendanceForm"></div>
+  </div>
+
+  <script>
+    const loggedEmpID = localStorage.getItem("teacherEmpID");
+    const teachers = JSON.parse(localStorage.getItem("teachers")) || [];
+    const students = JSON.parse(localStorage.getItem("students")) || [];
+    const attendance = JSON.parse(localStorage.getItem("attendance")) || [];
+
+    const teacher = teachers.find(t => t.empID === loggedEmpID);
+
+    if (!teacher) {
+      alert("Access denied or teacher not found");
+      window.location.href = "index.html";
+    }
+
+    document.getElementById("teacherInfo").innerText = `Welcome ${teacher.name} (Employee ID: ${teacher.empID}) | Class Teacher of: ${teacher.assignedClass}`;
+
+    const studentsInClass = students.filter(s => s.class === teacher.assignedClass);
+
+    if (studentsInClass.length === 0) {
+      document.getElementById("attendanceForm").innerHTML = "<p>No students assigned in your class.</p>";
+    } else {
+      let html = `<h3>Mark Attendance for ${teacher.assignedClass} (${new Date().toLocaleDateString()})</h3>`;
+      studentsInClass.forEach((s, i) => {
+        html += `
+          <label>${s.name} (Roll No: ${s.rollNo})</label>
+          <select id="att_${i}">
+            <option value="Present">Present</option>
+            <option value="Absent">Absent</option>
+          </select><br>`;
+      });
+      html += `<button onclick="submitAttendance()">Submit Attendance</button>`;
+      document.getElementById("attendanceForm").innerHTML = html;
+    }
+
+    function submitAttendance() {
+      const today = new Date().toLocaleDateString();
+      const records = studentsInClass.map((s, i) => {
+        const status = document.getElementById(`att_${i}`).value;
+        return { name: s.name, rollNo: s.rollNo, status };
+      });
+      attendance.push({
+        date: today,
+        empID: teacher.empID,
+        class: teacher.assignedClass,
+        records
+      });
+      localStorage.setItem("attendance", JSON.stringify(attendance));
+      alert("Attendance submitted successfully");
+    }
+
+    function logout() {
+      localStorage.removeItem("teacherEmpID");
+      window.location.href = "index.html";
+    }
+  </script>
+</body>
+</html>
