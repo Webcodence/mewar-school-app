@@ -1,4 +1,3 @@
-<!-- Updated school_panel.html with auto roll number generation and teacher ID system -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -49,14 +48,6 @@
     .add-btn {
       background-color: #17a2b8;
       margin-left: 10px;
-    }
-    .search-bar {
-      margin-top: 20px;
-    }
-    .class-section {
-      margin-top: 30px;
-      border-top: 1px solid #ccc;
-      padding-top: 20px;
     }
   </style>
 </head>
@@ -136,27 +127,13 @@ let students = JSON.parse(localStorage.getItem("students")) || [];
 let teachers = JSON.parse(localStorage.getItem("teachers")) || [];
 
 function getClassBaseCode(cls) {
-  switch (cls) {
-    case "1st": return 1000;
-    case "2nd": return 2000;
-    case "3rd": return 3000;
-    case "4th": return 4000;
-    case "5th": return 5000;
-    case "6th": return 6000;
-    case "7th": return 7000;
-    case "8th": return 8000;
-    case "9th": return 9000;
-    case "10th": return 10000;
-    case "11th PCM": return 11000;
-    case "11th PCB": return 11100;
-    case "11th Commerce": return 11200;
-    case "11th Agriculture": return 11300;
-    case "12th PCM": return 12000;
-    case "12th PCB": return 12100;
-    case "12th Commerce": return 12200;
-    case "12th Agriculture": return 12300;
-    default: return 999;
-  }
+  const codes = {
+    "1st": 1000, "2nd": 2000, "3rd": 3000, "4th": 4000, "5th": 5000,
+    "6th": 6000, "7th": 7000, "8th": 8000, "9th": 9000, "10th": 10000,
+    "11th PCM": 11000, "11th PCB": 11100, "11th Commerce": 11200, "11th Agriculture": 11300,
+    "12th PCM": 12000, "12th PCB": 12100, "12th Commerce": 12200, "12th Agriculture": 12300
+  };
+  return codes[cls] || 999;
 }
 
 function generateRollNo(cls) {
@@ -166,8 +143,7 @@ function generateRollNo(cls) {
 }
 
 function generateEmpID() {
-  const id = teachers.length + 1;
-  return "MEWAR" + id.toString().padStart(3, '0');
+  return "MEWAR" + (teachers.length + 1).toString().padStart(3, '0');
 }
 
 function saveStudent() {
@@ -182,7 +158,6 @@ function saveStudent() {
     const rollNo = students[index].rollNo;
     students[index] = { name, class: studentClass, rollNo };
   }
-
   localStorage.setItem("students", JSON.stringify(students));
   document.getElementById("studentForm").reset();
   document.getElementById("studentIndex").value = "";
@@ -205,10 +180,39 @@ function saveTeacher() {
     const empID = teachers[index].empID;
     teachers[index] = { name, phone, email, subject, post, assignedClass, empID };
   }
-
   localStorage.setItem("teachers", JSON.stringify(teachers));
   document.getElementById("teacherForm").reset();
   document.getElementById("teacherIndex").value = "";
+  displayTeachers();
+}
+
+function editStudent(index) {
+  const s = students[index];
+  document.getElementById("studentName").value = s.name;
+  document.getElementById("studentClass").value = s.class;
+  document.getElementById("studentIndex").value = index;
+}
+
+function deleteStudent(index) {
+  students.splice(index, 1);
+  localStorage.setItem("students", JSON.stringify(students));
+  displayStudents();
+}
+
+function editTeacher(index) {
+  const t = teachers[index];
+  document.getElementById("teacherName").value = t.name;
+  document.getElementById("teacherPhone").value = t.phone;
+  document.getElementById("teacherEmail").value = t.email;
+  document.getElementById("teacherSubject").value = t.subject;
+  document.getElementById("teacherPost").value = t.post;
+  document.getElementById("classTeacherAssigned").value = t.assignedClass;
+  document.getElementById("teacherIndex").value = index;
+}
+
+function deleteTeacher(index) {
+  teachers.splice(index, 1);
+  localStorage.setItem("teachers", JSON.stringify(teachers));
   displayTeachers();
 }
 
@@ -216,7 +220,7 @@ function displayStudents() {
   const listDiv = document.getElementById("studentList");
   listDiv.innerHTML = "<h3>Student List</h3>";
   students.forEach((s, index) => {
-    listDiv.innerHTML += `<p>${s.name} - ${s.class} - Roll No: ${s.rollNo}</p>`;
+    listDiv.innerHTML += `<p>${s.name} - ${s.class} - Roll No: ${s.rollNo} <button class='edit-btn' onclick='editStudent(${index})'>Edit</button><button class='delete-btn' onclick='deleteStudent(${index})'>Delete</button></p>`;
   });
 }
 
@@ -224,7 +228,7 @@ function displayTeachers() {
   const listDiv = document.getElementById("teacherList");
   listDiv.innerHTML = "<h3>Teacher List</h3>";
   teachers.forEach((t, index) => {
-    listDiv.innerHTML += `<p>${t.name} - ${t.post} - ${t.subject} - ${t.empID} - Class Teacher: ${t.assignedClass || "None"}</p>`;
+    listDiv.innerHTML += `<p>${t.name} - ${t.post} - ${t.subject} - ${t.empID} - Class Teacher: ${t.assignedClass || "None"} <button class='edit-btn' onclick='editTeacher(${index})'>Edit</button><button class='delete-btn' onclick='deleteTeacher(${index})'>Delete</button></p>`;
   });
 }
 
