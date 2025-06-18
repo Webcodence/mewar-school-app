@@ -1,47 +1,85 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Login - Mewar School App</title>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="login-container">
-    <h2>Login</h2>
-    <form id="loginForm">
-      <label for="role">Select Role:</label>
-      <select id="role" required>
-        <option value="admin">Admin</option>
-        <option value="school">School</option>
-        <option value="teacher">Teacher</option>
-      </select>
-      <label for="emailOrID">Email / Employee ID:</label>
-      <input type="text" id="emailOrID" required />
-      <label for="password">Password:</label>
-      <input type="password" id="password" required />
+    <img src="assets/logo.jpg" alt="Web Codence Logo" class="logo">
+    <h2>🔐 Login Panel</h2>
+
+    <label for="role">Select Role:</label>
+    <select id="role" onchange="updateLoginFields()">
+      <option value="admin">Admin</option>
+      <option value="school">School</option>
+      <option value="teacher">Teacher</option>
+    </select>
+
+    <form id="loginForm" onsubmit="handleLogin(event)">
+      <div id="inputFieldContainer">
+        <!-- Dynamic input will appear here -->
+      </div>
+      <input type="password" id="password" placeholder="Enter Password" required>
       <button type="submit">Login</button>
     </form>
-    <div id="loginMessage"></div>
+
+    <p id="error" style="color: red;"></p>
   </div>
 
   <script>
-    document.getElementById("loginForm").addEventListener("submit", function (e) {
-      e.preventDefault();
-      const role = document.getElementById("role").value;
-      const input = document.getElementById("emailOrID").value;
-      const pass = document.getElementById("password").value;
+    function updateLoginFields() {
+      const role = document.getElementById('role').value;
+      const inputDiv = document.getElementById('inputFieldContainer');
+      inputDiv.innerHTML = '';
 
-      // Demo credentials (for testing)
-      if (role === "admin" && input === "admin" && pass === "Akshatjain250@") {
-        window.location.href = "admin_panel.html";
-      } else if (role === "school" && input === "mewarpublicschool181@gmail.com" && pass === "Akshatjain250@") {
-        window.location.href = "school_panel.html";
-      } else if (role === "teacher" && input.startsWith("MEWAR") && pass === "1234") {
-        window.location.href = "teacher_panel.html?emp=" + input;
+      if (role === 'admin') {
+        inputDiv.innerHTML = `<input type="text" id="username" placeholder="Enter Username" required>`;
+      } else if (role === 'school') {
+        inputDiv.innerHTML = `<input type="email" id="email" placeholder="Enter School Email" required>`;
       } else {
-        document.getElementById("loginMessage").innerText = "Invalid credentials!";
+        inputDiv.innerHTML = `<input type="text" id="employeeId" placeholder="Enter Employee ID" required>`;
       }
-    });
+    }
+
+    function handleLogin(e) {
+      e.preventDefault();
+      const role = document.getElementById('role').value;
+      const password = document.getElementById('password').value;
+      let valid = false;
+
+      if (role === 'admin') {
+        const username = document.getElementById('username').value;
+        if (username === 'admin' && password === 'Akshatjain250@') {
+          localStorage.setItem("user_role", "admin");
+          window.location.href = "admin_panel.html";
+          valid = true;
+        }
+      } else if (role === 'school') {
+        const email = document.getElementById('email').value;
+        if (email === 'mewarpublicschool181@gmail.com' && password === 'Akshatjain250@') {
+          localStorage.setItem("user_role", "school");
+          window.location.href = "school_panel.html";
+          valid = true;
+        }
+      } else if (role === 'teacher') {
+        const empId = document.getElementById('employeeId').value;
+        if (empId === 'MEWAR001' && password === '1234') {
+          localStorage.setItem("user_role", "teacher");
+          localStorage.setItem("logged_teacher_id", empId);
+          window.location.href = "teacher_panel.html";
+          valid = true;
+        }
+      }
+
+      if (!valid) {
+        document.getElementById('error').textContent = '❌ Invalid credentials. Please try again.';
+      }
+    }
+
+    // Auto show Admin fields on load
+    window.onload = updateLoginFields;
   </script>
 </body>
 </html>
