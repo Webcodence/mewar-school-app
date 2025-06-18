@@ -57,6 +57,39 @@
     </div>
   </div>
 
+  <h3>Add New Student</h3>
+<form id="studentForm" onsubmit="event.preventDefault(); addStudent();">
+  <input type="text" id="studentName" placeholder="Student Name" required />
+  <input type="text" id="rollNo" placeholder="Roll No" required />
+  
+  <label for="class">Class:</label>
+  <select id="class" required>
+    <option value="1st">1st</option>
+    <option value="2nd">2nd</option>
+    <option value="3rd">3rd</option>
+    <option value="4th">4th</option>
+    <option value="5th">5th</option>
+    <option value="6th">6th</option>
+    <option value="7th">7th</option>
+    <option value="8th">8th</option>
+    <option value="9th">9th</option>
+    <option value="10th">10th</option>
+    <option value="11th PCM">11th PCM</option>
+    <option value="11th PCB">11th PCB</option>
+    <option value="11th Commerce">11th Commerce</option>
+    <option value="11th Agriculture">11th Agriculture</option>
+    <option value="12th PCM">12th PCM</option>
+    <option value="12th PCB">12th PCB</option>
+    <option value="12th Commerce">12th Commerce</option>
+    <option value="12th Agriculture">12th Agriculture</option>
+  </select>
+
+  <button type="submit">Add Student</button>
+</form>
+
+<!-- Optional: Show student list -->
+<div id="studentList"></div>
+
   <script>
     // Storage Keys
     const TEACHERS = "teacherData";
@@ -117,6 +150,37 @@
       loadTeachers();
       loadStudents();
     };
+    // Load existing students
+  let students = JSON.parse(localStorage.getItem("students") || "[]");
+
+  function addStudent() {
+    const name = document.getElementById("studentName").value;
+    const roll = document.getElementById("rollNo").value;
+    const className = document.getElementById("class").value;
+
+    if (!name || !roll || !className) {
+      alert("All fields required!");
+      return;
+    }
+
+    students.push({ name, roll, class: className });
+    localStorage.setItem("students", JSON.stringify(students));
+
+    alert("✅ Student added successfully!");
+    document.getElementById("studentForm").reset();
+    displayStudents();
+  }
+
+  function displayStudents() {
+    const listDiv = document.getElementById("studentList");
+    listDiv.innerHTML = "";
+    students.forEach((s, index) => {
+      listDiv.innerHTML += `<p>${index + 1}. ${s.name} - ${s.roll} - ${s.class}</p>`;
+    });
+  }
+
+  // Load on page start
+  window.onload = displayStudents;
   </script>
 </body>
 </html>
