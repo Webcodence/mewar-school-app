@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Export Data - Mewar App</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="panel">
+    <h2>Export School Data</h2>
+    <p>Click the button below to export all current data (students, teachers, attendance) as a backup JSON file.</p>
+    <button onclick="exportData()">Download Backup</button>
+  </div>
+
+  <script>
+    function exportData() {
+      const data = {
+        students: JSON.parse(localStorage.getItem("students")) || [],
+        teachers: JSON.parse(localStorage.getItem("teachers")) || [],
+        attendance: JSON.parse(localStorage.getItem("attendance")) || []
+      };
+
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'mewar-school-backup.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+  </script>
+</body>
+</html>
