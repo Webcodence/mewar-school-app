@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>School Panel - Manage Teachers & Students</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="school-panel">
+    <h1>School Dashboard - Mewar Public School</h1>
+    <div class="tabs">
+      <button onclick="switchTab('teachers')">👨‍🏫 Manage Teachers</button>
+      <button onclick="switchTab('students')">👧👦 Manage Students</button>
+    </div>
+
+    <div id="teachers" class="tab-content">
+      <h2>Add New Teacher</h2>
+      <form id="teacherForm">
+        <input type="text" id="teacherName" placeholder="Full Name" required>
+        <input type="text" id="teacherPhone" placeholder="Phone" required>
+        <input type="email" id="teacherEmail" placeholder="Email" required>
+        <input type="date" id="joiningDate" required>
+        <input type="text" id="cvFile" placeholder="CV File Name (e.g. resume.pdf)" required>
+        <button type="submit">Add Teacher</button>
+      </form>
+      <ul id="teacherList"></ul>
+    </div>
+
+    <div id="students" class="tab-content" style="display:none;">
+      <h2>Add New Student</h2>
+      <form id="studentForm">
+        <input type="text" id="studentName" placeholder="Full Name" required>
+        <select id="studentClass" required>
+          <option value="">Select Class</option>
+          <option>1st to 10th</option>
+          <option>11th PCM</option>
+          <option>11th PCB</option>
+          <option>11th Commerce</option>
+          <option>11th Agriculture</option>
+          <option>12th PCM</option>
+          <option>12th PCB</option>
+          <option>12th Commerce</option>
+          <option>12th Agriculture</option>
+        </select>
+        <input type="text" id="rollNo" placeholder="Roll Number" required>
+        <button type="submit">Add Student</button>
+      </form>
+      <ul id="studentList"></ul>
+    </div>
+  </div>
+
+  <script>
+    // Storage Keys
+    const TEACHERS = "teacherData";
+    const STUDENTS = "studentData";
+
+    // Teacher Logic
+    document.getElementById("teacherForm").onsubmit = function(e) {
+      e.preventDefault();
+      const id = "MEWAR" + String(Date.now()).slice(-4);
+      const teacher = {
+        id,
+        name: document.getElementById("teacherName").value,
+        phone: document.getElementById("teacherPhone").value,
+        email: document.getElementById("teacherEmail").value,
+        date: document.getElementById("joiningDate").value,
+        cv: document.getElementById("cvFile").value
+      };
+      let all = JSON.parse(localStorage.getItem(TEACHERS)) || [];
+      all.push(teacher);
+      localStorage.setItem(TEACHERS, JSON.stringify(all));
+      alert("Teacher added: " + id);
+      loadTeachers();
+    };
+
+    function loadTeachers() {
+      const list = document.getElementById("teacherList");
+      const all = JSON.parse(localStorage.getItem(TEACHERS)) || [];
+      list.innerHTML = all.map(t => `<li>${t.id} - ${t.name}</li>`).join("");
+    }
+
+    // Student Logic
+    document.getElementById("studentForm").onsubmit = function(e) {
+      e.preventDefault();
+      const student = {
+        name: document.getElementById("studentName").value,
+        class: document.getElementById("studentClass").value,
+        roll: document.getElementById("rollNo").value
+      };
+      let all = JSON.parse(localStorage.getItem(STUDENTS)) || [];
+      all.push(student);
+      localStorage.setItem(STUDENTS, JSON.stringify(all));
+      alert("Student added");
+      loadStudents();
+    };
+
+    function loadStudents() {
+      const list = document.getElementById("studentList");
+      const all = JSON.parse(localStorage.getItem(STUDENTS)) || [];
+      list.innerHTML = all.map(s => `<li>${s.roll} - ${s.name} (${s.class})</li>`).join("");
+    }
+
+    function switchTab(tab) {
+      document.getElementById("teachers").style.display = tab === "teachers" ? "block" : "none";
+      document.getElementById("students").style.display = tab === "students" ? "block" : "none";
+    }
+
+    window.onload = function() {
+      loadTeachers();
+      loadStudents();
+    };
+  </script>
+</body>
+</html>
