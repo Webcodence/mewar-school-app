@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Login - Mewar School App</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="login-container">
+    <h2>Login</h2>
+    <form id="loginForm">
+      <label for="role">Select Role:</label>
+      <select id="role" required>
+        <option value="admin">Admin</option>
+        <option value="school">School</option>
+        <option value="teacher">Teacher</option>
+      </select>
+      <label for="emailOrID">Email / Employee ID:</label>
+      <input type="text" id="emailOrID" required />
+      <label for="password">Password:</label>
+      <input type="password" id="password" required />
+      <button type="submit">Login</button>
+    </form>
+    <div id="loginMessage"></div>
+  </div>
+
+  <script>
+    document.getElementById("loginForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const role = document.getElementById("role").value;
+      const input = document.getElementById("emailOrID").value;
+      const pass = document.getElementById("password").value;
+
+      // Demo credentials (for testing)
+      if (role === "admin" && input === "admin" && pass === "Akshatjain250@") {
+        window.location.href = "admin_panel.html";
+      } else if (role === "school" && input === "mewarpublicschool181@gmail.com" && pass === "Akshatjain250@") {
+        window.location.href = "school_panel.html";
+      } else if (role === "teacher" && input.startsWith("MEWAR") && pass === "1234") {
+        window.location.href = "teacher_panel.html?emp=" + input;
+      } else {
+        document.getElementById("loginMessage").innerText = "Invalid credentials!";
+      }
+    });
+  </script>
+</body>
+</html>
