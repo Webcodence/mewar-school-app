@@ -1,3 +1,4 @@
+<!-- Updated school_panel.html with auto roll number generation and teacher ID system -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -68,9 +69,7 @@
   <form id="studentForm" onsubmit="event.preventDefault(); saveStudent();">
     <input type="hidden" id="studentIndex">
     <input type="text" id="studentName" placeholder="Student Name" required />
-
-    <label for="class">Class:</label>
-    <select id="class" required>
+    <select id="studentClass">
       <option value="1st">1st</option>
       <option value="2nd">2nd</option>
       <option value="3rd">3rd</option>
@@ -90,18 +89,11 @@
       <option value="12th Commerce">12th Commerce</option>
       <option value="12th Agriculture">12th Agriculture</option>
     </select>
-
     <button type="submit">Save Student</button>
     <button type="button" class="add-btn" onclick="document.getElementById('studentForm').reset(); document.getElementById('studentIndex').value = ''">Add New Student</button>
   </form>
 
-  <div class="search-bar">
-    <input type="text" id="searchInput" placeholder="Search students..." oninput="displayStudents()">
-  </div>
-
-  <div id="studentList">
-    <h3>Student List</h3>
-  </div>
+  <div id="studentList"></div>
 
   <hr>
   <h3>Manage Teachers</h3>
@@ -110,158 +102,134 @@
     <input type="text" id="teacherName" placeholder="Teacher Name" required />
     <input type="text" id="teacherPhone" placeholder="Phone Number" required />
     <input type="email" id="teacherEmail" placeholder="Email Address" required />
-
+    <input type="text" id="teacherSubject" placeholder="Subject Taught" required />
+    <input type="text" id="teacherPost" placeholder="Post (e.g., TGT, PGT)" required />
+    <select id="classTeacherAssigned">
+      <option value="">Assign as Class Teacher (Optional)</option>
+      <option value="1st">1st</option>
+      <option value="2nd">2nd</option>
+      <option value="3rd">3rd</option>
+      <option value="4th">4th</option>
+      <option value="5th">5th</option>
+      <option value="6th">6th</option>
+      <option value="7th">7th</option>
+      <option value="8th">8th</option>
+      <option value="9th">9th</option>
+      <option value="10th">10th</option>
+      <option value="11th PCM">11th PCM</option>
+      <option value="11th PCB">11th PCB</option>
+      <option value="11th Commerce">11th Commerce</option>
+      <option value="11th Agriculture">11th Agriculture</option>
+      <option value="12th PCM">12th PCM</option>
+      <option value="12th PCB">12th PCB</option>
+      <option value="12th Commerce">12th Commerce</option>
+      <option value="12th Agriculture">12th Agriculture</option>
+    </select>
     <button type="submit">Save Teacher</button>
     <button type="button" class="add-btn" onclick="document.getElementById('teacherForm').reset(); document.getElementById('teacherIndex').value = ''">Add New Teacher</button>
   </form>
-
-  <div class="search-bar">
-    <input type="text" id="teacherSearch" placeholder="Search teachers..." oninput="displayTeachers()">
-  </div>
-
-  <div id="teacherList">
-    <h3>Teacher List</h3>
-  </div>
+  <div id="teacherList"></div>
 </div>
 
 <script>
-  let students = JSON.parse(localStorage.getItem("students") || "[]");
-  let teachers = JSON.parse(localStorage.getItem("teachers") || "[]");
-  const rollStart = {
-    "1st": 1000, "2nd": 2000, "3rd": 3000, "4th": 4000, "5th": 5000,
-    "6th": 6000, "7th": 7000, "8th": 8000, "9th": 9000, "10th": 10000,
-    "11th PCM": 11000, "11th PCB": 11100, "11th Commerce": 11200, "11th Agriculture": 11300,
-    "12th PCM": 12000, "12th PCB": 12100, "12th Commerce": 12200, "12th Agriculture": 12300
-  };
+let students = JSON.parse(localStorage.getItem("students")) || [];
+let teachers = JSON.parse(localStorage.getItem("teachers")) || [];
 
-  function generateRoll(className) {
-    const classStudents = students.filter(s => s.class === className);
-    return rollStart[className] + classStudents.length + 1;
+function getClassBaseCode(cls) {
+  switch (cls) {
+    case "1st": return 1000;
+    case "2nd": return 2000;
+    case "3rd": return 3000;
+    case "4th": return 4000;
+    case "5th": return 5000;
+    case "6th": return 6000;
+    case "7th": return 7000;
+    case "8th": return 8000;
+    case "9th": return 9000;
+    case "10th": return 10000;
+    case "11th PCM": return 11000;
+    case "11th PCB": return 11100;
+    case "11th Commerce": return 11200;
+    case "11th Agriculture": return 11300;
+    case "12th PCM": return 12000;
+    case "12th PCB": return 12100;
+    case "12th Commerce": return 12200;
+    case "12th Agriculture": return 12300;
+    default: return 999;
+  }
+}
+
+function generateRollNo(cls) {
+  const base = getClassBaseCode(cls);
+  const classStudents = students.filter(s => s.class === cls);
+  return base + classStudents.length + 1;
+}
+
+function generateEmpID() {
+  const id = teachers.length + 1;
+  return "MEWAR" + id.toString().padStart(3, '0');
+}
+
+function saveStudent() {
+  const index = document.getElementById("studentIndex").value;
+  const name = document.getElementById("studentName").value;
+  const studentClass = document.getElementById("studentClass").value;
+
+  if (index === "") {
+    const rollNo = generateRollNo(studentClass);
+    students.push({ name, class: studentClass, rollNo });
+  } else {
+    const rollNo = students[index].rollNo;
+    students[index] = { name, class: studentClass, rollNo };
   }
 
-  function generateEmpID() {
-    return `MEWAR${String(teachers.length + 1).padStart(3, '0')}`;
+  localStorage.setItem("students", JSON.stringify(students));
+  document.getElementById("studentForm").reset();
+  document.getElementById("studentIndex").value = "";
+  displayStudents();
+}
+
+function saveTeacher() {
+  const index = document.getElementById("teacherIndex").value;
+  const name = document.getElementById("teacherName").value;
+  const phone = document.getElementById("teacherPhone").value;
+  const email = document.getElementById("teacherEmail").value;
+  const subject = document.getElementById("teacherSubject").value;
+  const post = document.getElementById("teacherPost").value;
+  const assignedClass = document.getElementById("classTeacherAssigned").value;
+
+  if (index === "") {
+    const empID = generateEmpID();
+    teachers.push({ name, phone, email, subject, post, assignedClass, empID });
+  } else {
+    const empID = teachers[index].empID;
+    teachers[index] = { name, phone, email, subject, post, assignedClass, empID };
   }
 
-  function saveStudent() {
-    const index = document.getElementById("studentIndex").value;
-    const name = document.getElementById("studentName").value;
-    const className = document.getElementById("class").value;
+  localStorage.setItem("teachers", JSON.stringify(teachers));
+  document.getElementById("teacherForm").reset();
+  document.getElementById("teacherIndex").value = "";
+  displayTeachers();
+}
 
-    let roll;
-    if (index === "") {
-      roll = generateRoll(className);
-      students.push({ name, roll: roll.toString(), class: className });
-    } else {
-      roll = students[index].roll;
-      students[index] = { name, roll, class: className };
-    }
+function displayStudents() {
+  const listDiv = document.getElementById("studentList");
+  listDiv.innerHTML = "<h3>Student List</h3>";
+  students.forEach((s, index) => {
+    listDiv.innerHTML += `<p>${s.name} - ${s.class} - Roll No: ${s.rollNo}</p>`;
+  });
+}
 
-    localStorage.setItem("students", JSON.stringify(students));
-    document.getElementById("studentForm").reset();
-    document.getElementById("studentIndex").value = "";
-    displayStudents();
-  }
+function displayTeachers() {
+  const listDiv = document.getElementById("teacherList");
+  listDiv.innerHTML = "<h3>Teacher List</h3>";
+  teachers.forEach((t, index) => {
+    listDiv.innerHTML += `<p>${t.name} - ${t.post} - ${t.subject} - ${t.empID} - Class Teacher: ${t.assignedClass || "None"}</p>`;
+  });
+}
 
-  function saveTeacher() {
-    const index = document.getElementById("teacherIndex").value;
-    const name = document.getElementById("teacherName").value;
-    const phone = document.getElementById("teacherPhone").value;
-    const email = document.getElementById("teacherEmail").value;
-
-    if (index === "") {
-      const empID = generateEmpID();
-      teachers.push({ name, phone, email, empID });
-    } else {
-      const empID = teachers[index].empID;
-      teachers[index] = { name, phone, email, empID };
-    }
-
-    localStorage.setItem("teachers", JSON.stringify(teachers));
-    document.getElementById("teacherForm").reset();
-    document.getElementById("teacherIndex").value = "";
-    displayTeachers();
-  }
-
-  function deleteStudent(index) {
-    if (confirm("Are you sure to delete this student?")) {
-      students.splice(index, 1);
-      localStorage.setItem("students", JSON.stringify(students));
-      displayStudents();
-    }
-  }
-
-  function deleteTeacher(index) {
-    if (confirm("Are you sure to delete this teacher?")) {
-      teachers.splice(index, 1);
-      localStorage.setItem("teachers", JSON.stringify(teachers));
-      displayTeachers();
-    }
-  }
-
-  function editStudent(index) {
-    const s = students[index];
-    document.getElementById("studentIndex").value = index;
-    document.getElementById("studentName").value = s.name;
-    document.getElementById("class").value = s.class;
-  }
-
-  function editTeacher(index) {
-    const t = teachers[index];
-    document.getElementById("teacherIndex").value = index;
-    document.getElementById("teacherName").value = t.name;
-    document.getElementById("teacherPhone").value = t.phone;
-    document.getElementById("teacherEmail").value = t.email;
-  }
-
-  function displayStudents() {
-    const listDiv = document.getElementById("studentList");
-    listDiv.innerHTML = "<h3>Student List</h3>";
-
-    const searchTerm = document.getElementById("searchInput").value.toLowerCase();
-    const grouped = {};
-    students.forEach((s, index) => {
-      if (
-        s.name.toLowerCase().includes(searchTerm) ||
-        s.roll.toLowerCase().includes(searchTerm) ||
-        s.class.toLowerCase().includes(searchTerm)
-      ) {
-        if (!grouped[s.class]) grouped[s.class] = [];
-        grouped[s.class].push({ ...s, index });
-      }
-    });
-
-    for (const className in grouped) {
-      listDiv.innerHTML += `<div class='class-section'><h4>${className}</h4>`;
-      grouped[className].forEach(s => {
-        listDiv.innerHTML += `<p>${s.name} - ${s.roll} <button class='edit-btn' onclick='editStudent(${s.index})'>Edit</button> <button class='delete-btn' onclick='deleteStudent(${s.index})'>Delete</button></p>`;
-      });
-      listDiv.innerHTML += `</div>`;
-    }
-  }
-
-  function displayTeachers() {
-    const listDiv = document.getElementById("teacherList");
-    listDiv.innerHTML = "<h3>Teacher List</h3>";
-
-    const search = document.getElementById("teacherSearch").value.toLowerCase();
-
-    teachers.forEach((t, index) => {
-      if (
-        t.name.toLowerCase().includes(search) ||
-        t.email.toLowerCase().includes(search) ||
-        t.phone.includes(search) ||
-        t.empID.toLowerCase().includes(search)
-      ) {
-        listDiv.innerHTML += `<p>${t.name} - ${t.empID} - ${t.phone} <button class='edit-btn' onclick='editTeacher(${index})'>Edit</button> <button class='delete-btn' onclick='deleteTeacher(${index})'>Delete</button></p>`;
-      }
-    });
-  }
-
-  window.onload = function () {
-    displayStudents();
-    displayTeachers();
-  };
+displayStudents();
+displayTeachers();
 </script>
 
 </body>
