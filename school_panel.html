@@ -64,7 +64,7 @@
 <div class="container">
   <h2>Welcome to School Panel</h2>
 
-  <h3>Add / Edit Student</h3>
+  <h3>Manage Students</h3>
   <form id="studentForm" onsubmit="event.preventDefault(); saveStudent();">
     <input type="hidden" id="studentIndex">
     <input type="text" id="studentName" placeholder="Student Name" required />
@@ -96,17 +96,37 @@
   </form>
 
   <div class="search-bar">
-    <input type="text" id="searchInput" placeholder="Search by name, roll number or class" oninput="displayStudents()">
+    <input type="text" id="searchInput" placeholder="Search students..." oninput="displayStudents()">
   </div>
 
   <div id="studentList">
     <h3>Student List</h3>
-    <!-- List will be shown here -->
+  </div>
+
+  <hr>
+  <h3>Manage Teachers</h3>
+  <form id="teacherForm" onsubmit="event.preventDefault(); saveTeacher();">
+    <input type="hidden" id="teacherIndex">
+    <input type="text" id="teacherName" placeholder="Teacher Name" required />
+    <input type="text" id="teacherPhone" placeholder="Phone Number" required />
+    <input type="email" id="teacherEmail" placeholder="Email Address" required />
+
+    <button type="submit">Save Teacher</button>
+    <button type="button" class="add-btn" onclick="document.getElementById('teacherForm').reset(); document.getElementById('teacherIndex').value = ''">Add New Teacher</button>
+  </form>
+
+  <div class="search-bar">
+    <input type="text" id="teacherSearch" placeholder="Search teachers..." oninput="displayTeachers()">
+  </div>
+
+  <div id="teacherList">
+    <h3>Teacher List</h3>
   </div>
 </div>
 
 <script>
   let students = JSON.parse(localStorage.getItem("students") || "[]");
+  let teachers = JSON.parse(localStorage.getItem("teachers") || "[]");
   const rollStart = {
     "1st": 1000, "2nd": 2000, "3rd": 3000, "4th": 4000, "5th": 5000,
     "6th": 6000, "7th": 7000, "8th": 8000, "9th": 9000, "10th": 10000,
@@ -117,6 +137,10 @@
   function generateRoll(className) {
     const classStudents = students.filter(s => s.class === className);
     return rollStart[className] + classStudents.length + 1;
+  }
+
+  function generateEmpID() {
+    return `MEWAR${String(teachers.length + 1).padStart(3, '0')}`;
   }
 
   function saveStudent() {
@@ -139,11 +163,39 @@
     displayStudents();
   }
 
+  function saveTeacher() {
+    const index = document.getElementById("teacherIndex").value;
+    const name = document.getElementById("teacherName").value;
+    const phone = document.getElementById("teacherPhone").value;
+    const email = document.getElementById("teacherEmail").value;
+
+    if (index === "") {
+      const empID = generateEmpID();
+      teachers.push({ name, phone, email, empID });
+    } else {
+      const empID = teachers[index].empID;
+      teachers[index] = { name, phone, email, empID };
+    }
+
+    localStorage.setItem("teachers", JSON.stringify(teachers));
+    document.getElementById("teacherForm").reset();
+    document.getElementById("teacherIndex").value = "";
+    displayTeachers();
+  }
+
   function deleteStudent(index) {
     if (confirm("Are you sure to delete this student?")) {
       students.splice(index, 1);
       localStorage.setItem("students", JSON.stringify(students));
       displayStudents();
+    }
+  }
+
+  function deleteTeacher(index) {
+    if (confirm("Are you sure to delete this teacher?")) {
+      teachers.splice(index, 1);
+      localStorage.setItem("teachers", JSON.stringify(teachers));
+      displayTeachers();
     }
   }
 
@@ -154,12 +206,19 @@
     document.getElementById("class").value = s.class;
   }
 
+  function editTeacher(index) {
+    const t = teachers[index];
+    document.getElementById("teacherIndex").value = index;
+    document.getElementById("teacherName").value = t.name;
+    document.getElementById("teacherPhone").value = t.phone;
+    document.getElementById("teacherEmail").value = t.email;
+  }
+
   function displayStudents() {
     const listDiv = document.getElementById("studentList");
     listDiv.innerHTML = "<h3>Student List</h3>";
 
     const searchTerm = document.getElementById("searchInput").value.toLowerCase();
-
     const grouped = {};
     students.forEach((s, index) => {
       if (
@@ -181,8 +240,27 @@
     }
   }
 
+  function displayTeachers() {
+    const listDiv = document.getElementById("teacherList");
+    listDiv.innerHTML = "<h3>Teacher List</h3>";
+
+    const search = document.getElementById("teacherSearch").value.toLowerCase();
+
+    teachers.forEach((t, index) => {
+      if (
+        t.name.toLowerCase().includes(search) ||
+        t.email.toLowerCase().includes(search) ||
+        t.phone.includes(search) ||
+        t.empID.toLowerCase().includes(search)
+      ) {
+        listDiv.innerHTML += `<p>${t.name} - ${t.empID} - ${t.phone} <button class='edit-btn' onclick='editTeacher(${index})'>Edit</button> <button class='delete-btn' onclick='deleteTeacher(${index})'>Delete</button></p>`;
+      }
+    });
+  }
+
   window.onload = function () {
     displayStudents();
+    displayTeachers();
   };
 </script>
 
