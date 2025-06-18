@@ -2,24 +2,72 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Admin Panel - Mewar School App</title>
-  <link rel="stylesheet" href="styles.css">
+  <title>Admin Panel - Web Codence Mewar App</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="admin-container">
-    <h1>Welcome, Admin (Web Codence)</h1>
-    <div class="admin-options">
-      <button onclick="window.location.href='dashboard.html'">📊 Dashboard</button>
-      <button onclick="window.location.href='school_panel.html'">🏫 Manage School</button>
-      <button onclick="shutdownApp()">💣 Kill Switch (Shutdown School Access)</button>
-    </div>
-    <div id="shutdownStatus"></div>
+  <div class="panel">
+    <h2>Welcome Admin - Web Codence</h2>
+    <button onclick="logout()">Logout</button>
+    <hr>
+
+    <h3>Manage Teachers</h3>
+    <button onclick="location.href='school_panel.html'">Go to School Panel</button>
+
+    <h3>Change Passwords</h3>
+    <input type="email" id="schoolEmail" placeholder="Enter School Email (Only one)">
+    <input type="password" id="schoolNewPass" placeholder="New School Password">
+    <button onclick="changeSchoolPassword()">Change School Password</button>
+
+    <input type="text" id="teacherEmpID" placeholder="Enter Teacher Employee ID">
+    <input type="password" id="teacherNewPass" placeholder="New Teacher Password">
+    <button onclick="changeTeacherPassword()">Change Teacher Password</button>
+
+    <h3 style="color: red;">KILL SWITCH</h3>
+    <p>This will delete all school, teacher, student and attendance data. <b>Irreversible!</b></p>
+    <button style="background-color:red;" onclick="killSwitch()">Delete All Data</button>
   </div>
 
   <script>
-    function shutdownApp() {
-      localStorage.setItem("school_access", "disabled");
-      document.getElementById("shutdownStatus").innerText = "✅ School access has been disabled!";
+    function logout() {
+      localStorage.clear();
+      window.location.href = "index.html";
+    }
+
+    function changeSchoolPassword() {
+      const email = document.getElementById("schoolEmail").value.trim().toLowerCase();
+      const newPass = document.getElementById("schoolNewPass").value;
+
+      if (email === "mewarpublicschool181@gmail.com") {
+        localStorage.setItem("schoolPassword", newPass);
+        alert("School password updated!");
+      } else {
+        alert("Invalid school email.");
+      }
+    }
+
+    function changeTeacherPassword() {
+      const empID = document.getElementById("teacherEmpID").value.trim();
+      const newPass = document.getElementById("teacherNewPass").value;
+
+      let teachers = JSON.parse(localStorage.getItem("teachers")) || [];
+      const index = teachers.findIndex(t => t.empID === empID);
+
+      if (index >= 0) {
+        teachers[index].password = newPass;
+        localStorage.setItem("teachers", JSON.stringify(teachers));
+        alert("Teacher password updated!");
+      } else {
+        alert("Teacher not found!");
+      }
+    }
+
+    function killSwitch() {
+      if (confirm("Are you sure you want to delete EVERYTHING? This action is irreversible!")) {
+        localStorage.clear();
+        alert("All data deleted. The app is now empty.");
+        window.location.href = "index.html";
+      }
     }
   </script>
 </body>
