@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Panel - Mewar School App</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="admin-container">
+    <h1>Welcome, Admin (Web Codence)</h1>
+    <div class="admin-options">
+      <button onclick="window.location.href='dashboard.html'">📊 Dashboard</button>
+      <button onclick="window.location.href='school_panel.html'">🏫 Manage School</button>
+      <button onclick="shutdownApp()">💣 Kill Switch (Shutdown School Access)</button>
+    </div>
+    <div id="shutdownStatus"></div>
+  </div>
+
+  <script>
+    function shutdownApp() {
+      localStorage.setItem("school_access", "disabled");
+      document.getElementById("shutdownStatus").innerText = "✅ School access has been disabled!";
+    }
+  </script>
+</body>
+</html>
