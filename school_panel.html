@@ -37,14 +37,30 @@
       margin: auto;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
+    .edit-btn {
+      background-color: #28a745;
+      margin-left: 10px;
+    }
+    .edit-btn:hover {
+      background-color: #1e7e34;
+    }
+    .add-btn {
+      background-color: #17a2b8;
+      margin-left: 10px;
+    }
+    .add-btn:hover {
+      background-color: #117a8b;
+    }
   </style>
 </head>
 <body>
 
 <div class="container">
   <h2>Welcome to School Panel</h2>
-  <h3>Add New Student</h3>
-  <form id="studentForm" onsubmit="event.preventDefault(); addStudent();">
+
+  <h3>Add / Edit Student</h3>
+  <form id="studentForm" onsubmit="event.preventDefault(); saveStudent();">
+    <input type="hidden" id="studentIndex">
     <input type="text" id="studentName" placeholder="Student Name" required />
     <input type="text" id="rollNo" placeholder="Roll No" required />
 
@@ -70,46 +86,110 @@
       <option value="12th Agriculture">12th Agriculture</option>
     </select>
 
-    <button type="submit">Add Student</button>
+    <button type="submit">Save Student</button>
+    <button type="button" class="add-btn" onclick="document.getElementById('studentForm').reset(); document.getElementById('studentIndex').value = '';">Add New Student</button>
   </form>
 
   <div id="studentList">
     <h3>Student List</h3>
     <!-- List will be shown here -->
   </div>
+
+  <h3>Add / Edit Teacher</h3>
+  <form id="teacherForm" onsubmit="event.preventDefault(); saveTeacher();">
+    <input type="hidden" id="teacherIndex">
+    <input type="text" id="teacherName" placeholder="Teacher Name" required />
+    <input type="email" id="teacherEmail" placeholder="Email" required />
+    <input type="text" id="teacherPhone" placeholder="Phone Number" required />
+    <input type="text" id="teacherEmpId" placeholder="Employee ID" required />
+    <button type="submit">Save Teacher</button>
+    <button type="button" class="add-btn" onclick="document.getElementById('teacherForm').reset(); document.getElementById('teacherIndex').value = '';">Add New Teacher</button>
+  </form>
+
+  <div id="teacherList">
+    <h3>Teacher List</h3>
+    <!-- List will be shown here -->
+  </div>
 </div>
 
 <script>
-  // Load existing students
   let students = JSON.parse(localStorage.getItem("students") || "[]");
+  let teachers = JSON.parse(localStorage.getItem("teachers") || "[]");
 
-  function addStudent() {
+  function saveStudent() {
+    const index = document.getElementById("studentIndex").value;
     const name = document.getElementById("studentName").value;
     const roll = document.getElementById("rollNo").value;
     const className = document.getElementById("class").value;
 
-    if (!name || !roll || !className) {
-      alert("All fields required!");
-      return;
+    if (index === "") {
+      students.push({ name, roll, class: className });
+    } else {
+      students[index] = { name, roll, class: className };
     }
 
-    students.push({ name, roll, class: className });
     localStorage.setItem("students", JSON.stringify(students));
-
-    alert("✅ Student added successfully!");
     document.getElementById("studentForm").reset();
+    document.getElementById("studentIndex").value = "";
     displayStudents();
+  }
+
+  function editStudent(index) {
+    const s = students[index];
+    document.getElementById("studentIndex").value = index;
+    document.getElementById("studentName").value = s.name;
+    document.getElementById("rollNo").value = s.roll;
+    document.getElementById("class").value = s.class;
   }
 
   function displayStudents() {
     const listDiv = document.getElementById("studentList");
     listDiv.innerHTML = "<h3>Student List</h3>";
     students.forEach((s, index) => {
-      listDiv.innerHTML += `<p>${index + 1}. ${s.name} - ${s.roll} - ${s.class}</p>`;
+      listDiv.innerHTML += `<p>${index + 1}. ${s.name} - ${s.roll} - ${s.class} <button class='edit-btn' onclick='editStudent(${index})'>Edit</button></p>`;
     });
   }
 
-  window.onload = displayStudents;
+  function saveTeacher() {
+    const index = document.getElementById("teacherIndex").value;
+    const name = document.getElementById("teacherName").value;
+    const email = document.getElementById("teacherEmail").value;
+    const phone = document.getElementById("teacherPhone").value;
+    const empId = document.getElementById("teacherEmpId").value;
+
+    if (index === "") {
+      teachers.push({ name, email, phone, empId });
+    } else {
+      teachers[index] = { name, email, phone, empId };
+    }
+
+    localStorage.setItem("teachers", JSON.stringify(teachers));
+    document.getElementById("teacherForm").reset();
+    document.getElementById("teacherIndex").value = "";
+    displayTeachers();
+  }
+
+  function editTeacher(index) {
+    const t = teachers[index];
+    document.getElementById("teacherIndex").value = index;
+    document.getElementById("teacherName").value = t.name;
+    document.getElementById("teacherEmail").value = t.email;
+    document.getElementById("teacherPhone").value = t.phone;
+    document.getElementById("teacherEmpId").value = t.empId;
+  }
+
+  function displayTeachers() {
+    const listDiv = document.getElementById("teacherList");
+    listDiv.innerHTML = "<h3>Teacher List</h3>";
+    teachers.forEach((t, index) => {
+      listDiv.innerHTML += `<p>${index + 1}. ${t.name} - ${t.email} - ${t.phone} - ${t.empId} <button class='edit-btn' onclick='editTeacher(${index})'>Edit</button></p>`;
+    });
+  }
+
+  window.onload = function () {
+    displayStudents();
+    displayTeachers();
+  };
 </script>
 
 </body>
