@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Mewar App</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="panel">
+    <h2>Dashboard Overview</h2>
+    <canvas id="classwiseChart" width="400" height="200"></canvas>
+    <br>
+    <canvas id="attendanceChart" width="400" height="200"></canvas>
+  </div>
+
+  <script>
+    const students = JSON.parse(localStorage.getItem("students")) || [];
+    const teachers = JSON.parse(localStorage.getItem("teachers")) || [];
+    const attendance = JSON.parse(localStorage.getItem("attendance")) || [];
+
+    const classList = [
+      "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th",
+      "11th PCM", "11th PCB", "11th Commerce", "11th Agriculture",
+      "12th PCM", "12th PCB", "12th Commerce", "12th Agriculture"
+    ];
+
+    const studentCounts = classList.map(cls => students.filter(s => s.class === cls).length);
+
+    const ctx1 = document.getElementById('classwiseChart').getContext('2d');
+    new Chart(ctx1, {
+      type: 'bar',
+      data: {
+        labels: classList,
+        datasets: [{
+          label: 'Students per Class',
+          data: studentCounts,
+          backgroundColor: 'rgba(0, 123, 255, 0.6)'
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          x: { ticks: { autoSkip: false } },
+          y: { beginAtZero: true }
+        }
+      }
+    });
+
+    const attendanceSummary = {};
+    attendance.forEach(record => {
+      if (!attendanceSummary[record.class]) {
+        attendanceSummary[record.class] = { present: 0, total: 0 };
+      }
+      record.records.forEach(r => {
+        attendanceSummary[record.class].total++;
+        if (r.status === 'Present') attendanceSummary[record.class].present++;
+      });
+    });
+
+    const avgAttendance = classList.map(cls => {
+      const data = attendanceSummary[cls];
+      if (data) return ((data.present / data.total) * 100).toFixed(2);
+      return 0;
+    });
+
+    const ctx2 = document.getElementById('attendanceChart').getContext('2d');
+    new Chart(ctx2, {
+      type: 'line',
+      data: {
+        labels: classList,
+        datasets: [{
+          label: 'Avg Attendance % per Class',
+          data: avgAttendance,
+          borderColor: 'rgba(40, 167, 69, 1)',
+          backgroundColor: 'rgba(40, 167, 69, 0.2)',
+          fill: true,
+          tension: 0.3
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: { beginAtZero: true, max: 100 }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
