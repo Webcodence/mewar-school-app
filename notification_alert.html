@@ -19,6 +19,18 @@
     const notificationDiv = document.getElementById("notifications");
     const studentStats = {};
 
+    // Cumulative tracking per student
+    students.forEach(s => {
+      const key = `${s.class}-${s.rollNo}`;
+      studentStats[key] = {
+        name: s.name,
+        rollNo: s.rollNo,
+        class: s.class,
+        total: 0,
+        present: 0
+      };
+    });
+
     attendance.forEach(record => {
       record.records.forEach(r => {
         const key = `${record.class}-${r.rollNo}`;
@@ -38,21 +50,57 @@
 
     let alertFound = false;
     Object.values(studentStats).forEach(entry => {
-      const percent = ((entry.present / entry.total) * 100).toFixed(2);
-      if (percent < 75) {
-        alertFound = true;
-        const box = document.createElement("div");
-        box.style.background = "#ffdddd";
-        box.style.border = "1px solid #ff0000";
-        box.style.padding = "10px";
-        box.style.marginBottom = "10px";
-        box.innerHTML = `<strong>⚠ Alert:</strong> <b>${entry.name}</b> (Roll No: <b>${entry.rollNo}</b>) in <b>${entry.class}</b> has only <b>${percent}%</b> attendance.`;
-        notificationDiv.appendChild(box);
+      if (entry.total > 0) {
+        const percent = ((entry.present / entry.total) * 100).toFixed(2);
+        if (percent < 75) {
+          alertFound = true;
+          const box = document.createElement("div");
+          box.style.background = "#ffdddd";
+          box.style.border = "1px solid #ff0000";
+          box.style.padding = "10px";
+          box.style.marginBottom = "10px";
+          box.innerHTML = `<strong>⚠ Alert:</strong> <b>${entry.name}</b> (Roll No: <b>${entry.rollNo}</b>) in <b>${entry.class}</b> has only <b>${percent}%</b> attendance.`;
+          notificationDiv.appendChild(box);
+        }
       }
     });
 
     if (!alertFound) {
-      notificationDiv.innerHTML = "<p>✅ All students have attendance above 75%.</p>";
+      const summaryBox = document.createElement("div");
+      summaryBox.style.background = "#ddffdd";
+      summaryBox.style.border = "1px solid #00aa00";
+      summaryBox.style.padding = "10px";
+      summaryBox.style.marginTop = "10px";
+
+      summaryBox.innerHTML = "<p>✅ All students have attendance above 75%. Here is the summary:</p>";
+
+      const table = document.createElement("table");
+      table.border = "1";
+      table.style.width = "100%";
+      table.innerHTML = `
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Roll No</th>
+            <th>Class</th>
+            <th>Attendance %</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${Object.values(studentStats).map(entry => {
+            const percent = entry.total > 0 ? ((entry.present / entry.total) * 100).toFixed(2) : "0.00";
+            return `<tr>
+              <td>${entry.name}</td>
+              <td>${entry.rollNo}</td>
+              <td>${entry.class}</td>
+              <td>${percent}%</td>
+            </tr>`;
+          }).join("")}
+        </tbody>
+      `;
+
+      summaryBox.appendChild(table);
+      notificationDiv.appendChild(summaryBox);
     }
   </script>
 </body>
