@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Teacher Attendance Panel</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="teacher-panel">
+    <h1>Mark Attendance</h1>
+    <p>Teacher ID: <span id="empId"></span></p>
+    <div>
+      <label>Select Date:</label>
+      <input type="date" id="attDate" required />
+    </div>
+    <div>
+      <label>Select Class:</label>
+      <select id="classSelect" required>
+        <option value="">Select Class</option>
+        <option>1st to 10th</option>
+        <option>11th PCM</option>
+        <option>11th PCB</option>
+        <option>11th Commerce</option>
+        <option>11th Agriculture</option>
+        <option>12th PCM</option>
+        <option>12th PCB</option>
+        <option>12th Commerce</option>
+        <option>12th Agriculture</option>
+      </select>
+    </div>
+    <div>
+      <button onclick="loadStudents()">Load Students</button>
+    </div>
+    <form id="attForm" style="margin-top:20px;">
+      <div id="studentList"></div>
+      <button type="submit">Submit Attendance</button>
+    </form>
+    <div id="attStatus"></div>
+  </div>
+
+  <script>
+    const empID = new URLSearchParams(window.location.search).get("emp") || "UNKNOWN";
+    document.getElementById("empId").innerText = empID;
+
+    const STUDENTS = "studentData";
+    const ATTENDANCE = "attendanceData";
+
+    function loadStudents() {
+      const classSelected = document.getElementById("classSelect").value;
+      const all = JSON.parse(localStorage.getItem(STUDENTS)) || [];
+      const students = all.filter(s => s.class === classSelected);
+      const div = document.getElementById("studentList");
+      if (!students.length) {
+        div.innerHTML = "<p>No students found for selected class.</p>";
+        return;
+      }
+      div.innerHTML = students
+        .map(s => `
+          <div>
+            ${s.roll} - ${s.name}:
+            <select name="${s.roll}">
+              <option value="Present">Present</option>
+              <option value="Absent">Absent</option>
+            </select>
+          </div>
+        `).join("");
+    }
+
+    document.getElementById("attForm").onsubmit = function (e) {
+      e.preventDefault();
+      const form = e.target;
+      const date = document.getElementById("attDate").value;
+      const className = document.getElementById("classSelect").value;
+      const data = {};
+
+      [...form.elements].forEach(el => {
+        if (el.name && el.value) {
+          data[el.name] = el.value;
+        }
+      });
+
+      const allData = JSON.parse(localStorage.getItem(ATTENDANCE)) || [];
+      allData.push({ date, className, takenBy: empID, records: data });
+      localStorage.setItem(ATTENDANCE, JSON.stringify(allData));
+
+      const presentCount = Object.values(data).filter(v => v === "Present").length;
+      const total = Object.keys(data).length;
+      const percent = Math.round((presentCount / total) * 100);
+
+      document.getElementById("attStatus").innerHTML =
+        `<p>✅ Attendance Saved. ${presentCount}/${total} present. Attendance: ${percent}%</p>` +
+        (percent < 75 ? `<p style='color:red'>⚠️ Attendance below 75%</p>` : "");
+    };
+  </script>
+</body>
+</html>
