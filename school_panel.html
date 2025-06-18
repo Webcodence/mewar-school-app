@@ -33,7 +33,7 @@
       background: white;
       padding: 20px;
       border-radius: 8px;
-      max-width: 600px;
+      max-width: 800px;
       margin: auto;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
@@ -41,15 +41,21 @@
       background-color: #28a745;
       margin-left: 10px;
     }
-    .edit-btn:hover {
-      background-color: #1e7e34;
+    .delete-btn {
+      background-color: #dc3545;
+      margin-left: 10px;
     }
     .add-btn {
       background-color: #17a2b8;
       margin-left: 10px;
     }
-    .add-btn:hover {
-      background-color: #117a8b;
+    .search-bar {
+      margin-top: 20px;
+    }
+    .class-section {
+      margin-top: 30px;
+      border-top: 1px solid #ccc;
+      padding-top: 20px;
     }
   </style>
 </head>
@@ -62,7 +68,6 @@
   <form id="studentForm" onsubmit="event.preventDefault(); saveStudent();">
     <input type="hidden" id="studentIndex">
     <input type="text" id="studentName" placeholder="Student Name" required />
-    <input type="text" id="rollNo" placeholder="Roll No" required />
 
     <label for="class">Class:</label>
     <select id="class" required>
@@ -87,44 +92,44 @@
     </select>
 
     <button type="submit">Save Student</button>
-    <button type="button" class="add-btn" onclick="document.getElementById('studentForm').reset(); document.getElementById('studentIndex').value = '';">Add New Student</button>
+    <button type="button" class="add-btn" onclick="document.getElementById('studentForm').reset(); document.getElementById('studentIndex').value = ''">Add New Student</button>
   </form>
+
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Search by name, roll number or class" oninput="displayStudents()">
+  </div>
 
   <div id="studentList">
     <h3>Student List</h3>
-    <!-- List will be shown here -->
-  </div>
-
-  <h3>Add / Edit Teacher</h3>
-  <form id="teacherForm" onsubmit="event.preventDefault(); saveTeacher();">
-    <input type="hidden" id="teacherIndex">
-    <input type="text" id="teacherName" placeholder="Teacher Name" required />
-    <input type="email" id="teacherEmail" placeholder="Email" required />
-    <input type="text" id="teacherPhone" placeholder="Phone Number" required />
-    <input type="text" id="teacherEmpId" placeholder="Employee ID" required />
-    <button type="submit">Save Teacher</button>
-    <button type="button" class="add-btn" onclick="document.getElementById('teacherForm').reset(); document.getElementById('teacherIndex').value = '';">Add New Teacher</button>
-  </form>
-
-  <div id="teacherList">
-    <h3>Teacher List</h3>
     <!-- List will be shown here -->
   </div>
 </div>
 
 <script>
   let students = JSON.parse(localStorage.getItem("students") || "[]");
-  let teachers = JSON.parse(localStorage.getItem("teachers") || "[]");
+  const rollStart = {
+    "1st": 1000, "2nd": 2000, "3rd": 3000, "4th": 4000, "5th": 5000,
+    "6th": 6000, "7th": 7000, "8th": 8000, "9th": 9000, "10th": 10000,
+    "11th PCM": 11000, "11th PCB": 11100, "11th Commerce": 11200, "11th Agriculture": 11300,
+    "12th PCM": 12000, "12th PCB": 12100, "12th Commerce": 12200, "12th Agriculture": 12300
+  };
+
+  function generateRoll(className) {
+    const classStudents = students.filter(s => s.class === className);
+    return rollStart[className] + classStudents.length + 1;
+  }
 
   function saveStudent() {
     const index = document.getElementById("studentIndex").value;
     const name = document.getElementById("studentName").value;
-    const roll = document.getElementById("rollNo").value;
     const className = document.getElementById("class").value;
 
+    let roll;
     if (index === "") {
-      students.push({ name, roll, class: className });
+      roll = generateRoll(className);
+      students.push({ name, roll: roll.toString(), class: className });
     } else {
+      roll = students[index].roll;
       students[index] = { name, roll, class: className };
     }
 
@@ -134,61 +139,50 @@
     displayStudents();
   }
 
+  function deleteStudent(index) {
+    if (confirm("Are you sure to delete this student?")) {
+      students.splice(index, 1);
+      localStorage.setItem("students", JSON.stringify(students));
+      displayStudents();
+    }
+  }
+
   function editStudent(index) {
     const s = students[index];
     document.getElementById("studentIndex").value = index;
     document.getElementById("studentName").value = s.name;
-    document.getElementById("rollNo").value = s.roll;
     document.getElementById("class").value = s.class;
   }
 
   function displayStudents() {
     const listDiv = document.getElementById("studentList");
     listDiv.innerHTML = "<h3>Student List</h3>";
+
+    const searchTerm = document.getElementById("searchInput").value.toLowerCase();
+
+    const grouped = {};
     students.forEach((s, index) => {
-      listDiv.innerHTML += `<p>${index + 1}. ${s.name} - ${s.roll} - ${s.class} <button class='edit-btn' onclick='editStudent(${index})'>Edit</button></p>`;
+      if (
+        s.name.toLowerCase().includes(searchTerm) ||
+        s.roll.toLowerCase().includes(searchTerm) ||
+        s.class.toLowerCase().includes(searchTerm)
+      ) {
+        if (!grouped[s.class]) grouped[s.class] = [];
+        grouped[s.class].push({ ...s, index });
+      }
     });
-  }
 
-  function saveTeacher() {
-    const index = document.getElementById("teacherIndex").value;
-    const name = document.getElementById("teacherName").value;
-    const email = document.getElementById("teacherEmail").value;
-    const phone = document.getElementById("teacherPhone").value;
-    const empId = document.getElementById("teacherEmpId").value;
-
-    if (index === "") {
-      teachers.push({ name, email, phone, empId });
-    } else {
-      teachers[index] = { name, email, phone, empId };
+    for (const className in grouped) {
+      listDiv.innerHTML += `<div class='class-section'><h4>${className}</h4>`;
+      grouped[className].forEach(s => {
+        listDiv.innerHTML += `<p>${s.name} - ${s.roll} <button class='edit-btn' onclick='editStudent(${s.index})'>Edit</button> <button class='delete-btn' onclick='deleteStudent(${s.index})'>Delete</button></p>`;
+      });
+      listDiv.innerHTML += `</div>`;
     }
-
-    localStorage.setItem("teachers", JSON.stringify(teachers));
-    document.getElementById("teacherForm").reset();
-    document.getElementById("teacherIndex").value = "";
-    displayTeachers();
-  }
-
-  function editTeacher(index) {
-    const t = teachers[index];
-    document.getElementById("teacherIndex").value = index;
-    document.getElementById("teacherName").value = t.name;
-    document.getElementById("teacherEmail").value = t.email;
-    document.getElementById("teacherPhone").value = t.phone;
-    document.getElementById("teacherEmpId").value = t.empId;
-  }
-
-  function displayTeachers() {
-    const listDiv = document.getElementById("teacherList");
-    listDiv.innerHTML = "<h3>Teacher List</h3>";
-    teachers.forEach((t, index) => {
-      listDiv.innerHTML += `<p>${index + 1}. ${t.name} - ${t.email} - ${t.phone} - ${t.empId} <button class='edit-btn' onclick='editTeacher(${index})'>Edit</button></p>`;
-    });
   }
 
   window.onload = function () {
     displayStudents();
-    displayTeachers();
   };
 </script>
 
