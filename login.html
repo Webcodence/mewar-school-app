@@ -2,84 +2,70 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Login - Mewar School App</title>
-  <link rel="stylesheet" href="styles.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Mewar App</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="login-container">
-    <img src="assets/logo.jpg" alt="Web Codence Logo" class="logo">
-    <h2>🔐 Login Panel</h2>
+  <div class="login-box">
+    <h2>Login</h2>
+    <form onsubmit="return loginUser()">
+      <label for="role">Select Role:</label>
+      <select id="role" required>
+        <option value="">--Select--</option>
+        <option value="admin">Admin</option>
+        <option value="school">School</option>
+        <option value="teacher">Teacher</option>
+      </select>
 
-    <label for="role">Select Role:</label>
-    <select id="role" onchange="updateLoginFields()">
-      <option value="admin">Admin</option>
-      <option value="school">School</option>
-      <option value="teacher">Teacher</option>
-    </select>
-
-    <form id="loginForm" onsubmit="handleLogin(event)">
-      <div id="inputFieldContainer">
-        <!-- Dynamic input will appear here -->
-      </div>
-      <input type="password" id="password" placeholder="Enter Password" required>
+      <input type="text" id="username" placeholder="Email / Employee ID" required>
+      <input type="password" id="password" placeholder="Password" required>
       <button type="submit">Login</button>
     </form>
-
-    <p id="error" style="color: red;"></p>
+    <p id="loginMessage" style="color:red;"></p>
   </div>
 
   <script>
-    function updateLoginFields() {
-      const role = document.getElementById('role').value;
-      const inputDiv = document.getElementById('inputFieldContainer');
-      inputDiv.innerHTML = '';
+    function loginUser() {
+      const role = document.getElementById("role").value;
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value;
 
-      if (role === 'admin') {
-        inputDiv.innerHTML = `<input type="text" id="username" placeholder="Enter Username" required>`;
-      } else if (role === 'school') {
-        inputDiv.innerHTML = `<input type="email" id="email" placeholder="Enter School Email" required>`;
-      } else {
-        inputDiv.innerHTML = `<input type="text" id="employeeId" placeholder="Enter Employee ID" required>`;
-      }
-    }
-
-    function handleLogin(e) {
-      e.preventDefault();
-      const role = document.getElementById('role').value;
-      const password = document.getElementById('password').value;
-      let valid = false;
-
-      if (role === 'admin') {
-        const username = document.getElementById('username').value;
-        if (username === 'admin' && password === 'Akshatjain250@') {
-          localStorage.setItem("user_role", "admin");
+      if (role === "admin") {
+        if (username === "admin" && password === "akshatjain250@") {
           window.location.href = "admin_panel.html";
-          valid = true;
-        }
-      } else if (role === 'school') {
-        const email = document.getElementById('email').value;
-        if (email === 'mewarpublicschool181@gmail.com' && password === 'Akshatjain250@') {
-          localStorage.setItem("user_role", "school");
-          window.location.href = "school_panel.html";
-          valid = true;
-        }
-      } else if (role === 'teacher') {
-        const empId = document.getElementById('employeeId').value;
-        if (empId === 'MEWAR001' && password === '1234') {
-          localStorage.setItem("user_role", "teacher");
-          localStorage.setItem("logged_teacher_id", empId);
-          window.location.href = "teacher_panel.html";
-          valid = true;
+          return false;
+        } else {
+          document.getElementById("loginMessage").innerText = "Invalid Admin Credentials";
+          return false;
         }
       }
 
-      if (!valid) {
-        document.getElementById('error').textContent = '❌ Invalid credentials. Please try again.';
+      if (role === "school") {
+        if (username === "mewarpublicschool181@gmail.com" && password === "mewar1234") {
+          localStorage.setItem("schoolUser", username);
+          window.location.href = "school_panel.html";
+          return false;
+        } else {
+          document.getElementById("loginMessage").innerText = "Invalid School Credentials";
+          return false;
+        }
+      }
+
+      if (role === "teacher") {
+        const teachers = JSON.parse(localStorage.getItem("teachers")) || [];
+        const found = teachers.find(t => t.empID === username && t.password === password);
+
+        if (found) {
+          localStorage.setItem("teacherEmpID", found.empID);
+          window.location.href = "teacher_panel.html";
+          return false;
+        } else {
+          document.getElementById("loginMessage").innerText = "Invalid Teacher Credentials";
+          return false;
+        }
       }
     }
-
-    // Auto show Admin fields on load
-    window.onload = updateLoginFields;
   </script>
 </body>
 </html>
