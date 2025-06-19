@@ -1,141 +1,101 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Attendance Sheet - Mewar App</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      background: #f4f4f4;
-    }
-    h2 {
-      text-align: center;
-    }
-    #controls {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      max-width: 300px;
-      margin: auto;
-    }
-    table {
-      width: 100%;
-      margin-top: 20px;
-      border-collapse: collapse;
-      background: #fff;
-    }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 10px;
-      text-align: center;
-    }
-    .export-btn {
-      margin: 10px auto;
-      display: block;
-      padding: 10px 20px;
-      background: #007bff;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Attendance Sheet | Mewar School</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-  <h2>Attendance Sheet</h2>
-  <div id="controls">
-    <input type="date" id="datePicker" />
-    <select id="classSelector">
-      <option value="">Select Class</option>
-      <option value="1st">1st</option>
-      <option value="2nd">2nd</option>
-      <option value="3rd">3rd</option>
-      <option value="4th">4th</option>
-      <option value="5th">5th</option>
-      <option value="6th">6th</option>
-      <option value="7th">7th</option>
-      <option value="8th">8th</option>
-      <option value="9th">9th</option>
-      <option value="10th">10th</option>
-      <option value="11 PCM">11 PCM</option>
-      <option value="11 PCB">11 PCB</option>
-      <option value="11 Commerce">11 Commerce</option>
-      <option value="11 Agriculture">11 Agriculture</option>
-      <option value="12 PCM">12 PCM</option>
-      <option value="12 PCB">12 PCB</option>
-      <option value="12 Commerce">12 Commerce</option>
-      <option value="12 Agriculture">12 Agriculture</option>
+<body class="bg-gray-50 min-h-screen p-6">
+  <h1 class="text-2xl font-bold text-center mb-6">Attendance Records</h1>
+
+  <div class="flex flex-col md:flex-row gap-4 justify-center mb-4">
+    <select id="classFilter" class="px-4 py-2 border rounded w-full md:w-64">
+      <option value="">All Classes</option>
+      <option>1st</option>
+      <option>2nd</option>
+      <option>3rd</option>
+      <option>4th</option>
+      <option>5th</option>
+      <option>6th</option>
+      <option>7th</option>
+      <option>8th</option>
+      <option>9th</option>
+      <option>10th</option>
+      <option>11th PCM</option>
+      <option>11th PCB</option>
+      <option>11th Commerce</option>
+      <option>11th Agriculture</option>
+      <option>12th PCM</option>
+      <option>12th PCB</option>
+      <option>12th Commerce</option>
+      <option>12th Agriculture</option>
     </select>
-    <button class="export-btn" onclick="exportCSV()">Export as CSV</button>
+    <button onclick="downloadCSV()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded">Export CSV</button>
   </div>
 
-  <table id="attendanceTable">
-    <thead>
-      <tr>
-        <th>Roll No</th>
-        <th>Name</th>
-        <th>Status</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <div id="attendanceTable" class="overflow-x-auto bg-white rounded shadow p-4"></div>
 
   <script>
+    const tableDiv = document.getElementById("attendanceTable");
     const attendance = JSON.parse(localStorage.getItem("attendance")) || [];
 
-    const dateInput = document.getElementById("datePicker");
-    const classInput = document.getElementById("classSelector");
-    const tableBody = document.querySelector("#attendanceTable tbody");
-
-    function renderTable(date, className) {
-      tableBody.innerHTML = "";
-      const record = attendance.find(
-        a => a.date === date && a.class === className
-      );
-      if (record) {
-        record.records.forEach(s => {
-          const row = document.createElement("tr");
-          row.innerHTML = `
-            <td>${s.rollNo}</td>
-            <td>${s.name}</td>
-            <td>${s.status}</td>
-          `;
-          tableBody.appendChild(row);
-        });
-      }
-    }
-
-    dateInput.addEventListener("change", () => {
-      if (classInput.value) renderTable(dateInput.value, classInput.value);
-    });
-
-    classInput.addEventListener("change", () => {
-      if (dateInput.value) renderTable(dateInput.value, classInput.value);
-    });
-
-    function exportCSV() {
-      const rows = Array.from(tableBody.querySelectorAll("tr"));
-      if (rows.length === 0) {
-        alert("No data to export.");
+    function renderTable(filter = "") {
+      const filtered = filter ? attendance.filter(a => a.class === filter) : attendance;
+      if (!filtered.length) {
+        tableDiv.innerHTML = "<p class='text-center text-gray-500'>No attendance records found.</p>";
         return;
       }
 
-      let csv = "Roll No,Name,Status\n";
-      rows.forEach(row => {
-        const cols = row.querySelectorAll("td");
-        const rowData = Array.from(cols).map(td => td.textContent).join(",");
-        csv += rowData + "\n";
+      let html = "<table class='w-full table-auto border-collapse'>";
+      html += `<thead><tr class='bg-blue-100'>
+        <th class='border px-2 py-1'>Date</th>
+        <th class='border px-2 py-1'>Class</th>
+        <th class='border px-2 py-1'>Roll No</th>
+        <th class='border px-2 py-1'>Name</th>
+        <th class='border px-2 py-1'>Status</th>
+        <th class='border px-2 py-1'>Taken By</th>
+      </tr></thead><tbody>`;
+
+      filtered.forEach(a => {
+        a.records.forEach(r => {
+          html += `<tr>
+            <td class='border px-2 py-1'>${a.date}</td>
+            <td class='border px-2 py-1'>${a.class}</td>
+            <td class='border px-2 py-1'>${r.rollNo}</td>
+            <td class='border px-2 py-1'>${r.name}</td>
+            <td class='border px-2 py-1'>${r.status}</td>
+            <td class='border px-2 py-1'>${r.takenBy}</td>
+          </tr>`;
+        });
       });
 
-      const blob = new Blob([csv], { type: "text/csv" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${classInput.value}_${dateInput.value}_attendance.csv`;
-      a.click();
+      html += "</tbody></table>";
+      tableDiv.innerHTML = html;
     }
+
+    document.getElementById("classFilter").addEventListener("change", function () {
+      renderTable(this.value);
+    });
+
+    function downloadCSV() {
+      const rows = [["Date", "Class", "Roll No", "Name", "Status", "Taken By"]];
+      attendance.forEach(a => {
+        a.records.forEach(r => {
+          rows.push([a.date, a.class, r.rollNo, r.name, r.status, r.takenBy]);
+        });
+      });
+      const csv = rows.map(e => e.join(",")).join("\n");
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "attendance.csv";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    renderTable();
   </script>
 </body>
 </html>
