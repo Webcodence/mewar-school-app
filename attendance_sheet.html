@@ -1,17 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Attendance Sheet - Mewar App</title>
-  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f4f4f4;
+    }
+    h2 {
+      text-align: center;
+    }
+    #controls {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-width: 300px;
+      margin: auto;
+    }
+    table {
+      width: 100%;
+      margin-top: 20px;
+      border-collapse: collapse;
+      background: #fff;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: center;
+    }
+    .export-btn {
+      margin: 10px auto;
+      display: block;
+      padding: 10px 20px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
-  <div class="panel">
-    <h2>Attendance Records</h2>
-    <label for="filterClass">Filter by Class:</label>
-    <select id="filterClass" onchange="filterAttendance()">
-      <option value="">All Classes</option>
+  <h2>Attendance Sheet</h2>
+  <div id="controls">
+    <input type="date" id="datePicker" />
+    <select id="classSelector">
+      <option value="">Select Class</option>
       <option value="1st">1st</option>
       <option value="2nd">2nd</option>
       <option value="3rd">3rd</option>
@@ -22,64 +59,83 @@
       <option value="8th">8th</option>
       <option value="9th">9th</option>
       <option value="10th">10th</option>
-      <option value="11th PCM">11th PCM</option>
-      <option value="11th PCB">11th PCB</option>
-      <option value="11th Commerce">11th Commerce</option>
-      <option value="11th Agriculture">11th Agriculture</option>
-      <option value="12th PCM">12th PCM</option>
-      <option value="12th PCB">12th PCB</option>
-      <option value="12th Commerce">12th Commerce</option>
-      <option value="12th Agriculture">12th Agriculture</option>
+      <option value="11 PCM">11 PCM</option>
+      <option value="11 PCB">11 PCB</option>
+      <option value="11 Commerce">11 Commerce</option>
+      <option value="11 Agriculture">11 Agriculture</option>
+      <option value="12 PCM">12 PCM</option>
+      <option value="12 PCB">12 PCB</option>
+      <option value="12 Commerce">12 Commerce</option>
+      <option value="12 Agriculture">12 Agriculture</option>
     </select>
-
-    <div id="attendanceData"></div>
+    <button class="export-btn" onclick="exportCSV()">Export as CSV</button>
   </div>
+
+  <table id="attendanceTable">
+    <thead>
+      <tr>
+        <th>Roll No</th>
+        <th>Name</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
   <script>
     const attendance = JSON.parse(localStorage.getItem("attendance")) || [];
 
-    function filterAttendance() {
-      const selectedClass = document.getElementById("filterClass").value;
-      const displayDiv = document.getElementById("attendanceData");
-      displayDiv.innerHTML = "";
+    const dateInput = document.getElementById("datePicker");
+    const classInput = document.getElementById("classSelector");
+    const tableBody = document.querySelector("#attendanceTable tbody");
 
-      const filtered = selectedClass
-        ? attendance.filter(record => record.class === selectedClass)
-        : attendance;
+    function renderTable(date, className) {
+      tableBody.innerHTML = "";
+      const record = attendance.find(
+        a => a.date === date && a.class === className
+      );
+      if (record) {
+        record.records.forEach(s => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${s.rollNo}</td>
+            <td>${s.name}</td>
+            <td>${s.status}</td>
+          `;
+          tableBody.appendChild(row);
+        });
+      }
+    }
 
-      if (filtered.length === 0) {
-        displayDiv.innerHTML = "<p>No attendance records found.</p>";
+    dateInput.addEventListener("change", () => {
+      if (classInput.value) renderTable(dateInput.value, classInput.value);
+    });
+
+    classInput.addEventListener("change", () => {
+      if (dateInput.value) renderTable(dateInput.value, classInput.value);
+    });
+
+    function exportCSV() {
+      const rows = Array.from(tableBody.querySelectorAll("tr"));
+      if (rows.length === 0) {
+        alert("No data to export.");
         return;
       }
 
-      filtered.forEach(record => {
-        const present = record.records.filter(r => r.status === "Present").length;
-        const total = record.records.length;
-        const percent = ((present / total) * 100).toFixed(2);
-
-        let table = `<h3>Date: ${record.date} | Class: ${record.class} | Teacher ID: ${record.empID}</h3>`;
-        table += `<table border="1" width="100%">
-                    <tr>
-                      <th>Student Name</th>
-                      <th>Roll No</th>
-                      <th>Status</th>
-                    </tr>`;
-
-        record.records.forEach(r => {
-          const rowColor = r.status === "Absent" ? " style='color:red'" : "";
-          table += `<tr${rowColor}><td>${r.name}</td><td>${r.rollNo}</td><td>${r.status}</td></tr>`;
-        });
-
-        table += `</table><p><strong>Present %:</strong> ${percent}%</p>`;
-        if (percent < 75) {
-          table += `<p style='color:red'><strong>ALERT:</strong> Attendance below 75%</p>`;
-        }
-
-        displayDiv.innerHTML += table + "<hr>";
+      let csv = "Roll No,Name,Status\n";
+      rows.forEach(row => {
+        const cols = row.querySelectorAll("td");
+        const rowData = Array.from(cols).map(td => td.textContent).join(",");
+        csv += rowData + "\n";
       });
-    }
 
-    filterAttendance();
+      const blob = new Blob([csv], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${classInput.value}_${dateInput.value}_attendance.csv`;
+      a.click();
+    }
   </script>
 </body>
 </html>
