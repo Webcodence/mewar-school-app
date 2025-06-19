@@ -3,66 +3,68 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login - Mewar App</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Login | Mewar School</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-  <div class="login-box">
-    <h2>Login</h2>
-    <form onsubmit="return loginUser()">
-      <label for="role">Select Role:</label>
-      <select id="role" required>
-        <option value="">--Select--</option>
+<body class="bg-gradient-to-tr from-indigo-100 to-blue-200 min-h-screen flex items-center justify-center">
+  <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
+    <div class="flex justify-center mb-4">
+      <img src="assets/webcodence-logo.jpg" alt="Web Codence Logo" class="h-16">
+    </div>
+    <h2 class="text-2xl font-bold text-center text-gray-700 mb-6">Mewar School Login</h2>
+
+    <div class="mb-4">
+      <label class="block text-sm font-medium text-gray-600">Login As</label>
+      <select id="loginType" class="mt-1 w-full px-4 py-2 border rounded-md focus:ring focus:border-blue-300">
         <option value="admin">Admin</option>
         <option value="school">School</option>
         <option value="teacher">Teacher</option>
       </select>
+    </div>
 
-      <input type="text" id="username" placeholder="Email / Employee ID" required>
-      <input type="password" id="password" placeholder="Password" required>
-      <button type="submit">Login</button>
-    </form>
-    <p id="loginMessage" style="color:red;"></p>
+    <div class="mb-4">
+      <label class="block text-sm font-medium text-gray-600">Username / Email / ID</label>
+      <input id="username" type="text" placeholder="Enter your ID or email" class="mt-1 w-full px-4 py-2 border rounded-md focus:ring focus:border-blue-300">
+    </div>
+
+    <div class="mb-6">
+      <label class="block text-sm font-medium text-gray-600">Password</label>
+      <input id="password" type="password" placeholder="Enter your password" class="mt-1 w-full px-4 py-2 border rounded-md focus:ring focus:border-blue-300">
+    </div>
+
+    <button onclick="handleLogin()" class="w-full bg-indigo-600 text-white py-2 rounded-md hover:bg-indigo-700 transition">Login</button>
+
+    <p id="loginMessage" class="text-center text-sm mt-4 text-red-500 hidden">Invalid credentials. Try again.</p>
   </div>
 
   <script>
-    function loginUser() {
-      const role = document.getElementById("role").value;
+    function handleLogin() {
+      const type = document.getElementById("loginType").value;
       const username = document.getElementById("username").value.trim();
-      const password = document.getElementById("password").value;
+      const password = document.getElementById("password").value.trim();
+      const errorMsg = document.getElementById("loginMessage");
+      errorMsg.classList.add("hidden");
 
-      if (role === "admin") {
+      if (type === "admin") {
         if (username === "admin" && password === "akshatjain250@") {
           window.location.href = "admin_panel.html";
-          return false;
         } else {
-          document.getElementById("loginMessage").innerText = "Invalid Admin Credentials";
-          return false;
+          errorMsg.classList.remove("hidden");
         }
-      }
-
-      if (role === "school") {
+      } else if (type === "school") {
         if (username === "mewarpublicschool181@gmail.com" && password === "mewar1234") {
-          localStorage.setItem("schoolUser", username);
           window.location.href = "school_panel.html";
-          return false;
         } else {
-          document.getElementById("loginMessage").innerText = "Invalid School Credentials";
-          return false;
+          errorMsg.classList.remove("hidden");
         }
-      }
-
-      if (role === "teacher") {
+      } else if (type === "teacher") {
         const teachers = JSON.parse(localStorage.getItem("teachers")) || [];
-        const found = teachers.find(t => t.empID === username && t.password === password);
-
+        const found = teachers.find(t => t.employeeId === username && t.password === password);
         if (found) {
-          localStorage.setItem("teacherEmpID", found.empID);
+          localStorage.setItem("loggedInTeacher", JSON.stringify(found));
           window.location.href = "teacher_panel.html";
-          return false;
         } else {
-          document.getElementById("loginMessage").innerText = "Invalid Teacher Credentials";
-          return false;
+          errorMsg.classList.remove("hidden");
         }
       }
     }
