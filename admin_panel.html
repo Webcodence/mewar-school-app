@@ -1,74 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Admin Panel - Web Codence Mewar App</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel | Mewar School</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-  <div class="panel">
-    <h2>Welcome Admin - Web Codence</h2>
-    <button onclick="logout()">Logout</button>
-    <hr>
+<body class="bg-gray-100 min-h-screen">
+  <header class="bg-indigo-600 text-white px-6 py-4 flex items-center justify-between">
+    <h1 class="text-xl font-bold">Admin Panel - Mewar School</h1>
+    <button onclick="logout()" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-md">Logout</button>
+  </header>
 
-    <h3>Manage Teachers</h3>
-    <button onclick="location.href='school_panel.html'">Go to School Panel</button>
+  <main class="p-6 space-y-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-lg font-semibold mb-4">Manage Passwords</h2>
+        <label class="block mb-2 text-sm">School Password:</label>
+        <input id="schoolPassword" class="w-full px-4 py-2 border rounded-md mb-4" type="text" placeholder="New password for school">
+        <label class="block mb-2 text-sm">Teacher Default Password:</label>
+        <input id="teacherPassword" class="w-full px-4 py-2 border rounded-md mb-4" type="text" placeholder="Default password for teachers">
+        <button onclick="updatePasswords()" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">Update Passwords</button>
+      </div>
 
-    <h3>Change Passwords</h3>
-    <input type="email" id="schoolEmail" placeholder="Enter School Email (Only one)">
-    <input type="password" id="schoolNewPass" placeholder="New School Password">
-    <button onclick="changeSchoolPassword()">Change School Password</button>
+      <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-lg font-semibold mb-4 text-red-600">Kill Switch</h2>
+        <p class="mb-4 text-sm text-gray-600">⚠ This will delete <strong>ALL</strong> data from the system including students, teachers, and attendance.</p>
+        <button onclick="killSwitch()" class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700">Delete All Data</button>
+      </div>
+    </div>
 
-    <input type="text" id="teacherEmpID" placeholder="Enter Teacher Employee ID">
-    <input type="password" id="teacherNewPass" placeholder="New Teacher Password">
-    <button onclick="changeTeacherPassword()">Change Teacher Password</button>
-
-    <h3 style="color: red;">KILL SWITCH</h3>
-    <p>This will delete all school, teacher, student and attendance data. <b>Irreversible!</b></p>
-    <button style="background-color:red;" onclick="killSwitch()">Delete All Data</button>
-  </div>
+    <div class="bg-white rounded-lg shadow p-6">
+      <h2 class="text-lg font-semibold mb-4">Quick Overview</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-indigo-100 p-4 rounded">
+          <h3 class="font-semibold">Total Students</h3>
+          <p id="totalStudents" class="text-2xl font-bold">0</p>
+        </div>
+        <div class="bg-green-100 p-4 rounded">
+          <h3 class="font-semibold">Total Teachers</h3>
+          <p id="totalTeachers" class="text-2xl font-bold">0</p>
+        </div>
+        <div class="bg-yellow-100 p-4 rounded">
+          <h3 class="font-semibold">Total Attendance Entries</h3>
+          <p id="totalAttendance" class="text-2xl font-bold">0</p>
+        </div>
+      </div>
+    </div>
+  </main>
 
   <script>
     function logout() {
-      localStorage.clear();
       window.location.href = "index.html";
     }
 
-    function changeSchoolPassword() {
-      const email = document.getElementById("schoolEmail").value.trim().toLowerCase();
-      const newPass = document.getElementById("schoolNewPass").value;
-
-      if (email === "mewarpublicschool181@gmail.com") {
-        localStorage.setItem("schoolPassword", newPass);
-        alert("School password updated!");
-      } else {
-        alert("Invalid school email.");
-      }
-    }
-
-    function changeTeacherPassword() {
-      const empID = document.getElementById("teacherEmpID").value.trim();
-      const newPass = document.getElementById("teacherNewPass").value;
-
-      let teachers = JSON.parse(localStorage.getItem("teachers")) || [];
-      const index = teachers.findIndex(t => t.empID === empID);
-
-      if (index >= 0) {
-        teachers[index].password = newPass;
-        localStorage.setItem("teachers", JSON.stringify(teachers));
-        alert("Teacher password updated!");
-      } else {
-        alert("Teacher not found!");
-      }
+    function updatePasswords() {
+      const schoolPass = document.getElementById("schoolPassword").value;
+      const teacherPass = document.getElementById("teacherPassword").value;
+      if (schoolPass) localStorage.setItem("schoolPassword", schoolPass);
+      if (teacherPass) localStorage.setItem("teacherDefaultPassword", teacherPass);
+      alert("✅ Passwords updated successfully.");
     }
 
     function killSwitch() {
-      if (confirm("Are you sure you want to delete EVERYTHING? This action is irreversible!")) {
+      if (confirm("Are you sure you want to delete ALL DATA? This cannot be undone.")) {
         localStorage.clear();
-        alert("All data deleted. The app is now empty.");
+        alert("⚠ All data deleted successfully.");
         window.location.href = "index.html";
       }
     }
+
+    function updateStats() {
+      const students = JSON.parse(localStorage.getItem("students")) || [];
+      const teachers = JSON.parse(localStorage.getItem("teachers")) || [];
+      const attendance = JSON.parse(localStorage.getItem("attendance")) || [];
+
+      document.getElementById("totalStudents").innerText = students.length;
+      document.getElementById("totalTeachers").innerText = teachers.length;
+      document.getElementById("totalAttendance").innerText = attendance.length;
+    }
+
+    window.onload = updateStats;
   </script>
 </body>
 </html>
