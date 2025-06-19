@@ -3,16 +3,30 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard - Mewar App</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <link rel="stylesheet" href="style.css">
+  <title>Dashboard | Mewar School</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-  <div class="panel">
-    <h2>Dashboard Overview</h2>
-    <canvas id="classwiseChart" width="400" height="200"></canvas>
-    <br>
-    <canvas id="attendanceChart" width="400" height="200"></canvas>
+<body class="bg-gray-50 min-h-screen p-6">
+  <h1 class="text-2xl font-bold text-center mb-6">📊 Mewar School Dashboard</h1>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="bg-white p-4 rounded shadow">
+      <h2 class="text-lg font-semibold">Total Students</h2>
+      <p id="studentCount" class="text-3xl mt-2 text-blue-700">0</p>
+    </div>
+    <div class="bg-white p-4 rounded shadow">
+      <h2 class="text-lg font-semibold">Total Teachers</h2>
+      <p id="teacherCount" class="text-3xl mt-2 text-green-700">0</p>
+    </div>
+    <div class="bg-white p-4 rounded shadow">
+      <h2 class="text-lg font-semibold">Total Attendance Entries</h2>
+      <p id="attendanceCount" class="text-3xl mt-2 text-purple-700">0</p>
+    </div>
+  </div>
+
+  <div class="mt-8">
+    <h2 class="text-lg font-semibold mb-4">📅 Average Attendance Summary</h2>
+    <div id="attendanceSummary" class="bg-white p-4 rounded shadow overflow-x-auto"></div>
   </div>
 
   <script>
@@ -20,75 +34,44 @@
     const teachers = JSON.parse(localStorage.getItem("teachers")) || [];
     const attendance = JSON.parse(localStorage.getItem("attendance")) || [];
 
-    const classList = [
-      "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th",
-      "11th PCM", "11th PCB", "11th Commerce", "11th Agriculture",
-      "12th PCM", "12th PCB", "12th Commerce", "12th Agriculture"
-    ];
+    document.getElementById("studentCount").textContent = students.length;
+    document.getElementById("teacherCount").textContent = teachers.length;
+    document.getElementById("attendanceCount").textContent = attendance.reduce((acc, a) => acc + a.records.length, 0);
 
-    const studentCounts = classList.map(cls => students.filter(s => s.class === cls).length);
+    const summaryDiv = document.getElementById("attendanceSummary");
+    const summaryMap = {};
 
-    const ctx1 = document.getElementById('classwiseChart').getContext('2d');
-    new Chart(ctx1, {
-      type: 'bar',
-      data: {
-        labels: classList,
-        datasets: [{
-          label: 'Students per Class',
-          data: studentCounts,
-          backgroundColor: 'rgba(0, 123, 255, 0.6)'
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { display: false }
-        },
-        scales: {
-          x: { ticks: { autoSkip: false } },
-          y: { beginAtZero: true }
-        }
-      }
+    students.forEach(s => {
+      const key = `${s.class}-${s.rollNo}`;
+      summaryMap[key] = { name: s.name, rollNo: s.rollNo, class: s.class, total: 0, present: 0 };
     });
 
-    const attendanceSummary = {};
-    attendance.forEach(record => {
-      if (!attendanceSummary[record.class]) {
-        attendanceSummary[record.class] = { present: 0, total: 0 };
-      }
-      record.records.forEach(r => {
-        attendanceSummary[record.class].total++;
-        if (r.status === 'Present') attendanceSummary[record.class].present++;
+    attendance.forEach(a => {
+      a.records.forEach(r => {
+        const key = `${a.class}-${r.rollNo}`;
+        if (!summaryMap[key]) {
+          summaryMap[key] = { name: r.name, rollNo: r.rollNo, class: a.class, total: 0, present: 0 };
+        }
+        summaryMap[key].total++;
+        if (r.status === "Present") summaryMap[key].present++;
       });
     });
 
-    const avgAttendance = classList.map(cls => {
-      const data = attendanceSummary[cls];
-      if (data) return ((data.present / data.total) * 100).toFixed(2);
-      return 0;
+    let html = `<table class='min-w-full text-sm'><thead><tr class='bg-gray-200'><th class='p-2'>Class</th><th class='p-2'>Roll No</th><th class='p-2'>Name</th><th class='p-2'>Present</th><th class='p-2'>Total</th><th class='p-2'>% Attendance</th></tr></thead><tbody>`;
+    Object.values(summaryMap).forEach(s => {
+      const percent = s.total > 0 ? ((s.present / s.total) * 100).toFixed(2) : "0.00";
+      const highlight = percent < 75 ? "bg-red-100 text-red-700" : "";
+      html += `<tr class='${highlight}'>
+        <td class='p-2'>${s.class}</td>
+        <td class='p-2'>${s.rollNo}</td>
+        <td class='p-2'>${s.name}</td>
+        <td class='p-2'>${s.present}</td>
+        <td class='p-2'>${s.total}</td>
+        <td class='p-2'>${percent}%</td>
+      </tr>`;
     });
-
-    const ctx2 = document.getElementById('attendanceChart').getContext('2d');
-    new Chart(ctx2, {
-      type: 'line',
-      data: {
-        labels: classList,
-        datasets: [{
-          label: 'Avg Attendance % per Class',
-          data: avgAttendance,
-          borderColor: 'rgba(40, 167, 69, 1)',
-          backgroundColor: 'rgba(40, 167, 69, 0.2)',
-          fill: true,
-          tension: 0.3
-        }]
-      },
-      options: {
-        responsive: true,
-        scales: {
-          y: { beginAtZero: true, max: 100 }
-        }
-      }
-    });
+    html += `</tbody></table>`;
+    summaryDiv.innerHTML = html;
   </script>
 </body>
 </html>
