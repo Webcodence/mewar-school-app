@@ -6,68 +6,61 @@
   <title>Login | Mewar School</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gradient-to-tr from-indigo-100 to-blue-200 min-h-screen flex items-center justify-center">
-  <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
-    <div class="flex justify-center mb-4">
-      <img src="assets/webcodence-logo.jpg" alt="Web Codence Logo" class="h-16">
-    </div>
-    <h2 class="text-2xl font-bold text-center text-gray-700 mb-6">Mewar School Login</h2>
+<body class="bg-gray-50 h-screen flex items-center justify-center">
+  <div class="bg-white p-8 rounded shadow-md w-full max-w-md">
+    <h1 class="text-xl font-bold mb-6 text-center">Welcome to Mewar School App</h1>
 
-    <div class="mb-4">
-      <label class="block text-sm font-medium text-gray-600">Login As</label>
-      <select id="loginType" class="mt-1 w-full px-4 py-2 border rounded-md focus:ring focus:border-blue-300">
+    <form id="loginForm" class="space-y-4">
+      <select id="loginType" class="w-full border px-4 py-2 rounded">
         <option value="admin">Admin</option>
         <option value="school">School</option>
         <option value="teacher">Teacher</option>
       </select>
-    </div>
 
-    <div class="mb-4">
-      <label class="block text-sm font-medium text-gray-600">Username / Email / ID</label>
-      <input id="username" type="text" placeholder="Enter your ID or email" class="mt-1 w-full px-4 py-2 border rounded-md focus:ring focus:border-blue-300">
-    </div>
+      <input id="loginId" class="w-full border px-4 py-2 rounded" placeholder="Enter ID / Email">
+      <input id="loginPass" type="password" class="w-full border px-4 py-2 rounded" placeholder="Enter Password">
+      <button class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700" type="submit">Login</button>
+    </form>
 
-    <div class="mb-6">
-      <label class="block text-sm font-medium text-gray-600">Password</label>
-      <input id="password" type="password" placeholder="Enter your password" class="mt-1 w-full px-4 py-2 border rounded-md focus:ring focus:border-blue-300">
-    </div>
-
-    <button onclick="handleLogin()" class="w-full bg-indigo-600 text-white py-2 rounded-md hover:bg-indigo-700 transition">Login</button>
-
-    <p id="loginMessage" class="text-center text-sm mt-4 text-red-500 hidden">Invalid credentials. Try again.</p>
+    <p id="loginMessage" class="text-red-600 mt-4 text-center"></p>
   </div>
 
   <script>
-    function handleLogin() {
+    document.getElementById("loginForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+
       const type = document.getElementById("loginType").value;
-      const username = document.getElementById("username").value.trim();
-      const password = document.getElementById("password").value.trim();
-      const errorMsg = document.getElementById("loginMessage");
-      errorMsg.classList.add("hidden");
+      const id = document.getElementById("loginId").value.trim();
+      const pass = document.getElementById("loginPass").value.trim();
+      const msg = document.getElementById("loginMessage");
 
       if (type === "admin") {
-        if (username === "admin" && password === "akshatjain250@") {
+        if (id === "admin" && pass === "akshatjain250@") {
           window.location.href = "admin_panel.html";
         } else {
-          errorMsg.classList.remove("hidden");
-        }
-      } else if (type === "school") {
-        if (username === "mewarpublicschool181@gmail.com" && password === "mewar1234") {
-          window.location.href = "school_panel.html";
-        } else {
-          errorMsg.classList.remove("hidden");
-        }
-      } else if (type === "teacher") {
-        const teachers = JSON.parse(localStorage.getItem("teachers")) || [];
-        const found = teachers.find(t => t.employeeId === username && t.password === password);
-        if (found) {
-          localStorage.setItem("loggedInTeacher", JSON.stringify(found));
-          window.location.href = "teacher_panel.html";
-        } else {
-          errorMsg.classList.remove("hidden");
+          msg.textContent = "❌ Invalid Admin Credentials";
         }
       }
-    }
+
+      if (type === "school") {
+        if (id === "mewarpublicschool181@gmail.com" && pass === "mewar1234") {
+          window.location.href = "school_panel.html";
+        } else {
+          msg.textContent = "❌ Invalid School Credentials";
+        }
+      }
+
+      if (type === "teacher") {
+        const teachers = JSON.parse(localStorage.getItem("teachers")) || [];
+        const found = teachers.find(t => t.employeeId === id && t.password === pass);
+        if (found) {
+          localStorage.setItem("loggedTeacher", id);
+          window.location.href = "teacher_panel.html";
+        } else {
+          msg.textContent = "❌ Invalid Teacher Credentials";
+        }
+      }
+    });
   </script>
 </body>
 </html>
